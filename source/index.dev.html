@@ -1382,7 +1382,9 @@ function CrmContainer({ session, onToast, focus }) {
 
 /* ================= ПРИЛОЖЕНИЕ ================= */
 function App() {
-  const [mode, setMode] = useState(() => (location.hash === '#crm' ? 'crm' : 'site'));
+  const isAdminHash = () => location.hash === '#admin';
+  const [mode, setMode] = useState(() => (isAdminHash() ? 'crm' : 'site'));
+  useEffect(() => { const h = () => setMode(isAdminHash() ? 'crm' : 'site'); addEventListener('hashchange', h); return () => removeEventListener('hashchange', h); }, []);
   const [lang, setLang] = useState(() => store.get('hinoki-lang') || 'ru');
   const [toast, setToast] = useState(null);
   const [focus, setFocus] = useState(null);
@@ -1390,7 +1392,7 @@ function App() {
   const t = T[lang];
 
   useEffect(() => { store.set('hinoki-lang', lang); document.documentElement.lang = lang === 'kz' ? 'kk' : 'ru'; }, [lang]);
-  useEffect(() => { if (mode === 'crm') { history.replaceState(null, '', '#crm'); window.scrollTo(0, 0); } else if (location.hash === '#crm') history.replaceState(null, '', location.pathname); }, [mode]);
+  useEffect(() => { window.scrollTo(0, 0); document.title = mode === 'crm' ? 'Hinoki CRM' : 'Hinoki SPA — Астана · онлайн-запись'; }, [mode]);
   useEffect(() => { if (!toast) return; const i = setTimeout(() => setToast(null), 8000); return () => clearTimeout(i); }, [toast]);
   const onToast = useCallback(b => setToast({ text: `Новая онлайн-запись: ${b.name} · ${svcName(b.svc)} · ${dateLabel(b.date)} ${fmt(b.start)}`, b }), []);
 
@@ -1403,16 +1405,13 @@ function App() {
   return <>
     <header className="top">
       <div className="wrap">
-        <a className="logo" href="#" onClick={e => { e.preventDefault(); setMode('site'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+        <a className="logo" href={location.pathname} onClick={e => { if (mode === 'site') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}>
           <Leaf /><div><b>Hinoki</b><small>SPA · Astana</small></div>
         </a>
         {mode === 'site' && <nav className="nav"><a href="#services">{t.nav_services}</a><a href="#book">{t.nav_book}</a><a href="#gift">{t.nav_gift}</a><a href="#contacts">{t.nav_contacts}</a></nav>}
         <div className="sp" />
-        <div className="seg"><button className={lang === 'ru' ? 'on' : ''} onClick={() => setLang('ru')}>RU</button><button className={lang === 'kz' ? 'on' : ''} onClick={() => setLang('kz')}>KZ</button></div>
-        <div className="seg dark">
-          <button className={mode === 'site' ? 'on' : ''} onClick={() => setMode('site')}>Клиент</button>
-          <button className={mode === 'crm' ? 'on' : ''} onClick={() => setMode('crm')}>CRM</button>
-        </div>
+        {mode === 'site' && <div className="seg"><button className={lang === 'ru' ? 'on' : ''} onClick={() => setLang('ru')}>RU</button><button className={lang === 'kz' ? 'on' : ''} onClick={() => setLang('kz')}>KZ</button></div>}
+        {mode === 'crm' && <a className="btn ghost sm" href={location.pathname}>← На сайт</a>}
       </div>
     </header>
     {mode === 'site' ? <ClientSite lang={lang} t={t} /> : crmView}
