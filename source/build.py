@@ -29,6 +29,9 @@ body = '\n'.join([guard,
                   inline(HERE / '_sb.out.js'),
                   inline(HERE / '_app.js')])
 
+import base64
+img = 'data:image/jpeg;base64,' + base64.b64encode((ROOT / 'img' / 'hero.jpg').read_bytes()).decode()
+body = body.replace("'img/hero.jpg'", repr(img)).replace('"img/hero.jpg"', '"' + img + '"')
 out = re.sub(r'<script src="https://unpkg.com[^"]+"[^>]*></script>\n', '', src)
 out = out.replace(m.group(0), body)
 (ROOT / 'index.html').write_text(out, encoding='utf-8')
