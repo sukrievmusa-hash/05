@@ -12,6 +12,7 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" crossorigin></script>
 <style>
 :root{
   --bg:#F7F4EF; --bg2:#EFE9DF; --card:#FFFDF9; --olive:#5C6B57; --olive-d:#48553F; --olive-l:#E3E8DD;
@@ -322,6 +323,13 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
 const OPEN = 11 * 60, CLOSE = 24 * 60, LAST_SLOT = 22 * 60 + 30;
 const WA_PHONE = '77080394182';
 const PHONE_VIEW = '+7 (708) 039-41-82';
+
+/* ================= СЕРВЕР (Supabase) ================= */
+const SB_URL = 'https://zqorhkgndknhfgahucgs.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxb3Joa2duZGtuaGZnYWh1Y2dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ3MzQ5OTQsImV4cCI6MjExMDMxMDk5NH0.XeN1wVK9lVqDRC7TSID9bCxa_kUJ18JLogU71fW5_1Y'; // публичный anon-ключ, доступ ограничен RLS
+const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, storageKey: 'hinoki-admin' } });
+const fromDb = r => ({ ...r, createdAt: Date.parse(r.created_at) });
+const toDb = b => { const { createdAt, created_at, ...r } = b; return r; };
 const ADDRESS = { ru: 'пр. Бауыржана Момышулы, 2А, Астана', kz: 'Бауыржан Момышұлы даңғылы, 2А, Астана' };
 
 const RESOURCES = [
@@ -608,7 +616,7 @@ function seedBookings(date) {
       if (kind === 'massage') assign.m.forEach(r => segs.push({ res: r, from: a, to: z, kind }));
       if (kind === 'tea') segs.push({ res: 'tea', from: a, to: z, kind });
     });
-    return { id: 'seed' + id, seed: true, date, name, phone, svc, dur, guests, start, pref, intensity, status, comment, segs, price: priceOf(s, dur, guests), source: id === 5 ? 'WhatsApp (вручную)' : id % 2 ? 'Instagram → WhatsApp' : 'Онлайн-запись', createdAt: Date.now() - 86400000 };
+    return { id: 'sd' + date.replace(/-/g, '') + id, seed: true, fresh: false, date, name, phone, svc, dur, guests, start, pref, intensity, status, comment, segs, price: priceOf(s, dur, guests), source: id === 5 ? 'WhatsApp (вручную)' : id % 2 ? 'Instagram → WhatsApp' : 'Онлайн-запись' };
   };
   return [
     mk(1, 'Айгуль и Тимур', '77015550101', 'shabyt', 2, 11 * 60, 'thai', 'medium', 'paid', { h: 'h1', m: ['mali', 'noy'] }, 'Годовщина свадьбы, подготовить лепестки'),
@@ -635,17 +643,6 @@ function seedClients(date) {
     c('77713332211', 'Асель и Данияр', 'Оплата сертификатом.', [[120, 'intro', 38000]]),
     c('77002228899', 'Гульнара Т.', 'VIP-гость, пишет в WhatsApp заранее.', [[3, 'moroccan', 48000], [33, 'deep', 38000], [63, 'janaru', 27900], [93, 'deep', 38000], [150, 'moroccan', 48000]]),
   ]);
-}
-const STORE_KEY = 'hinoki-spa-v1';
-function loadState() {
-  const today = todayKey();
-  const saved = store.get(STORE_KEY);
-  if (!saved) return { bookings: seedBookings(today), clients: seedClients(today), seedDate: today };
-  if (saved.seedDate !== today) {
-    // демо-записи переносятся на сегодня, записи пользователя сохраняются
-    return { ...saved, bookings: [...seedBookings(today), ...saved.bookings.filter(b => !b.seed)], seedDate: today };
-  }
-  return saved;
 }
 
 /* ================= ИКОНКИ / ДЕКОР ================= */
@@ -721,8 +718,10 @@ function ServiceCard({ s, lang, t, onBook, filter }) {
 /* ================= ВИДЖЕТ ЗАПИСИ ================= */
 const EMPTY_FORM = { guests: 1, svcId: 'tynys', dur: 60, date: null, time: null, pref: 'thai', intensity: 'medium', comment: '', name: '', phone: '' };
 
-function BookingWidget({ lang, t, bookings, onCreate, preset, onGoCrm }) {
+function BookingWidget({ lang, t, preset }) {
   const [step, setStep] = useState(1);
+  const [busyMap, setBusyMap] = useState({});
+  const [sending, setSending] = useState(false);
   const [f, setF] = useState({ ...EMPTY_FORM, date: todayKey() });
   const [done, setDone] = useState(null);
   const [err, setErr] = useState('');
@@ -732,25 +731,44 @@ function BookingWidget({ lang, t, bookings, onCreate, preset, onGoCrm }) {
     if (preset) { setDone(null); setStep(1); setF(p => ({ ...p, svcId: preset.svcId, guests: preset.guests || p.guests, time: null })); }
   }, [preset]);
 
+  // занятые интервалы с сервера (без имён и телефонов)
+  const fetchBusy = useCallback(async d => {
+    const { data, error } = await sb.rpc('get_busy', { p_date: d });
+    setBusyMap(m => ({ ...m, [d]: error ? 'error' : (data || []).map((segs, i) => ({ id: 'x' + i, date: d, status: 'wait', segs })) }));
+  }, []);
+  useEffect(() => { fetchBusy(f.date); const i = setInterval(() => fetchBusy(f.date), 30000); return () => clearInterval(i); }, [f.date]);
+  const busyState = busyMap[f.date];
+  const ready = Array.isArray(busyState);
+  const bookings = ready ? busyState : [];
+
   const svc = SVC[f.svcId];
   const days = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(todayKey(), i)), []);
-  const slots = useMemo(() => slotsFor(f, bookings, f.date), [f.svcId, f.dur, f.guests, f.pref, f.date, bookings]);
+  const slots = useMemo(() => ready ? slotsFor(f, bookings, f.date) : [], [f.svcId, f.dur, f.guests, f.pref, f.date, busyState]);
   const freeCount = slots.filter(s => s.state === 'free').length;
   // если выбранный слот стал недоступен — сбрасываем
-  useEffect(() => { if (f.time != null && !slots.find(s => s.m === f.time && s.state === 'free')) set({ time: null }); }, [slots]);
+  useEffect(() => { if (ready && f.time != null && !slots.find(s => s.m === f.time && s.state === 'free')) set({ time: null }); }, [slots]);
 
   const price = priceOf(svc, f.dur, f.guests);
   const total = phasesOf(svc, f.dur).slice(-1)[0][2];
   const valid = { 1: !!svc, 2: f.time != null, 3: true, 4: f.name.trim().length > 1 && phoneDigits(f.phone).length === 11 };
 
-  const submit = () => {
+  const submit = async () => {
     if (f.name.trim().length < 2) return setErr(t.name_err);
     if (phoneDigits(f.phone).length !== 11) return setErr(t.phone_err);
     const segs = allocate({ ...f, start: f.time }, bookings, f.date);
     if (!segs) { setStep(2); set({ time: null }); return setErr(t.slot_taken); }
-    const b = { id: 'b' + Date.now().toString(36) + uid(), date: f.date, name: f.name.trim(), phone: phoneDigits(f.phone), svc: f.svcId, dur: f.dur, guests: f.guests, start: f.time, pref: f.pref, intensity: f.intensity, comment: f.comment.trim(), status: 'wait', segs, price, source: 'Онлайн-запись (сайт)', createdAt: Date.now(), fresh: true };
-    onCreate(b);
-    setDone(b);
+    const payload = { date: f.date, start: f.time, dur: f.dur, svc: f.svcId, guests: f.guests, pref: f.pref, intensity: f.intensity, comment: f.comment.trim(), name: f.name.trim(), phone: phoneDigits(f.phone), segs };
+    setSending(true);
+    const { data, error } = await sb.rpc('create_booking', { p: payload });
+    setSending(false);
+    if (error) {
+      const m = error.message || '';
+      if (m.includes('slot_taken')) { fetchBusy(f.date); setStep(2); set({ time: null }); return setErr(t.slot_taken); }
+      if (m.includes('too_many')) return setErr(lang === 'kz' ? 'Бұл нөмірден өтінім тым көп. WhatsApp-қа жазыңыз.' : 'Слишком много заявок с этого номера. Напишите нам в WhatsApp.');
+      return setErr((lang === 'kz' ? 'Байланыс қатесі, қайталап көріңіз: ' : 'Ошибка связи с сервером, попробуйте ещё раз: ') + m);
+    }
+    fetchBusy(f.date);
+    setDone({ ...payload, id: data, price, status: 'wait' });
   };
 
   const masterNames = b => [...new Set(b.segs.filter(s => s.kind === 'massage').map(s => RESOURCES.find(r => r.id === s.res).name.replace('Мастер ', '')))].join(', ');
@@ -782,7 +800,6 @@ function BookingWidget({ lang, t, bookings, onCreate, preset, onGoCrm }) {
             <p>{t.booking_no}: <span className="code">{bookingCode(done.id)}</span></p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 380, margin: '20px auto 0' }}>
               <a className="btn wa" href={waLink(waText(done))} target="_blank" rel="noopener">💬 {t.send_wa}</a>
-              <button className="btn ghost" onClick={onGoCrm}>Посмотреть бронь в CRM →</button>
               <button className="btn ghost" onClick={reset}>{t.new_booking}</button>
             </div>
           </div>
@@ -823,7 +840,9 @@ function BookingWidget({ lang, t, bookings, onCreate, preset, onGoCrm }) {
             <div className="slots">
               {slots.map(s => <button key={s.m} className={'slot' + (f.time === s.m ? ' on' : '')} disabled={s.state !== 'free'} title={s.state === 'late' ? t.soon_close : s.state === 'busy' ? t.busy : ''} onClick={() => set({ time: s.m })}>{fmt(s.m)}</button>)}
             </div>
-            {freeCount === 0 && <p className="err">{t.no_slots}</p>}
+            {!busyState && <p className="note">⏳ {lang === 'kz' ? 'Кесте жүктелуде…' : 'Загружаем свободное время…'}</p>}
+            {busyState === 'error' && <p className="err">{lang === 'kz' ? 'Кестені жүктеу мүмкін болмады. WhatsApp арқылы жазылыңыз.' : 'Не удалось загрузить расписание. Запишитесь через WhatsApp: '}<a href={waLink('Здравствуйте! Хочу записаться в Hinoki SPA.')} target="_blank" rel="noopener">{PHONE_VIEW}</a></p>}
+            {ready && freeCount === 0 && <p className="err">{t.no_slots}</p>}
             <div className="legend"><span><i /> {t.free}</span><span><i style={{ background: 'repeating-linear-gradient(135deg,#EFE9DF,#EFE9DF 3px,#F7F4EF 3px,#F7F4EF 6px)' }} /> {t.busy}</span><span><i style={{ background: 'var(--olive)', borderColor: 'var(--olive)' }} /> {t.chosen}</span></div>
           </div>}
 
@@ -853,7 +872,7 @@ function BookingWidget({ lang, t, bookings, onCreate, preset, onGoCrm }) {
           <div className="nav-btns">
             {step > 1 ? <button className="btn ghost" onClick={() => setStep(step - 1)}>← {t.back}</button> : <span />}
             {step < 4 && <button className="btn olive" disabled={!valid[step] || (step === 3 && !allocate({ ...f, start: f.time }, bookings, f.date))} onClick={() => setStep(step + 1)}>{t.next} →</button>}
-            {step === 4 && <button className="btn gold" disabled={!valid[4]} onClick={submit}>{t.confirm}</button>}
+            {step === 4 && <button className="btn gold" disabled={!valid[4] || sending} onClick={submit}>{sending ? '⏳ …' : t.confirm}</button>}
           </div>
         </>}
       </div>
@@ -940,7 +959,7 @@ function GiftBuilder({ lang, t }) {
 }
 
 /* ================= САЙТ ДЛЯ КЛИЕНТОВ ================= */
-function ClientSite({ lang, t, bookings, onCreate, onGoCrm }) {
+function ClientSite({ lang, t }) {
   const [filter, setFilter] = useState('all');
   const [preset, setPreset] = useState(null);
   const list = SERVICES.filter(s => filter === 'all' || (filter === 'two' && s.cat === 'program') || (filter === 'prog' && s.cat === 'program') || (filter === 'mass' && s.cat === 'massage'));
@@ -985,7 +1004,7 @@ function ClientSite({ lang, t, bookings, onCreate, onGoCrm }) {
     <section className="s" id="book" style={{ background: 'var(--bg2)' }}>
       <div className="wrap">
         <div className="s-head"><div><h2>{t.book_title}</h2><p>{t.book_sub}</p></div></div>
-        <BookingWidget lang={lang} t={t} bookings={bookings} onCreate={onCreate} preset={preset} onGoCrm={onGoCrm} />
+        <BookingWidget lang={lang} t={t} preset={preset} />
       </div>
     </section>
 
@@ -1210,7 +1229,7 @@ function Clients({ clients, bookings, onNote, onOpen }) {
   </>;
 }
 
-function CRM({ bookings, clients, onUpdate, onDelete, onCreate, onNote, onReset, focus }) {
+function CRM({ bookings, clients, onUpdate, onDelete, onCreate, onNote, onDemo, onClearDemo, onLogout, email, focus }) {
   const [tab, setTab] = useState('schedule');
   const [date, setDate] = useState(todayKey());
   const [openId, setOpenId] = useState(null);
@@ -1240,6 +1259,7 @@ function CRM({ bookings, clients, onUpdate, onDelete, onCreate, onNote, onReset,
           {date !== todayKey() && <button className="btn ghost sm" onClick={() => setDate(todayKey())}>Сегодня</button>}
           <button className="btn olive sm" onClick={() => setAdding(true)}>+ Запись</button>
         </>}
+        <button className="btn ghost sm" title={email} onClick={onLogout}>Выйти</button>
       </div>
 
       {tab === 'schedule' ? <>
@@ -1258,7 +1278,9 @@ function CRM({ bookings, clients, onUpdate, onDelete, onCreate, onNote, onReset,
         <div className="legend" style={{ marginTop: 12 }}>
           {Object.entries(PHASE).map(([k, p]) => <span key={k}><i style={{ background: p.c, borderColor: p.c }} />{p.ru}</span>)}
           <span><i style={{ borderColor: 'var(--red)', borderWidth: 2 }} />накладка</span>
-          <span style={{ marginLeft: 'auto' }}><button className="more" style={{ color: 'var(--muted)' }} onClick={() => { if (confirm('Сбросить демо-данные? Все созданные записи и заметки удалятся.')) onReset(); }}>Сбросить демо-данные</button></span>
+          <span style={{ marginLeft: 'auto' }}>{all.some(b => b.seed)
+            ? <button className="more" style={{ color: 'var(--muted)' }} onClick={() => { if (confirm('Убрать демо-записи с этого дня? Настоящие записи останутся.')) onClearDemo(date); }}>Убрать демо-записи</button>
+            : <button className="more" onClick={() => onDemo(date)}>Заполнить день демо-записями</button>}</span>
         </div>
       </> : <Clients clients={clients} bookings={bookings} onNote={onNote} onOpen={(id, d) => { setTab('schedule'); setDate(d); setOpenId(id); }} />}
 
@@ -1268,34 +1290,115 @@ function CRM({ bookings, clients, onUpdate, onDelete, onCreate, onNote, onReset,
   );
 }
 
+/* ================= ВХОД И ДАННЫЕ CRM ================= */
+function useAdmin() {
+  const [session, setSession] = useState(undefined);
+  const [isAdmin, setIsAdmin] = useState(null);
+  useEffect(() => {
+    sb.auth.getSession().then(({ data }) => setSession(data.session || null));
+    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => setSession(s || null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+  const uidKey = session && session.user ? session.user.id : null;
+  useEffect(() => { setIsAdmin(null); if (uidKey) sb.rpc('is_admin').then(({ data }) => setIsAdmin(!!data)); }, [uidKey]);
+  return { session, isAdmin };
+}
+
+function Login() {
+  const [email, setEmail] = useState('');
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const go = async e => {
+    e.preventDefault(); setBusy(true); setErr('');
+    const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password: pw });
+    setBusy(false);
+    if (error) setErr(/invalid/i.test(error.message) ? 'Неверный email или пароль' : error.message);
+  };
+  return (
+    <div className="crm"><div className="wrap" style={{ maxWidth: 440 }}>
+      <form className="panel" onSubmit={go} style={{ marginTop: 30 }}>
+        <Leaf size={46} />
+        <h2 style={{ fontSize: 36, margin: '12px 0 4px' }}>Вход в CRM</h2>
+        <p style={{ color: 'var(--muted)', margin: '0 0 8px', fontSize: 14 }}>Только для администраторов Hinoki SPA</p>
+        <span className="lbl">Email</span>
+        <input className="inp" type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} required />
+        <span className="lbl">Пароль</span>
+        <input className="inp" type="password" autoComplete="current-password" value={pw} onChange={e => setPw(e.target.value)} required />
+        {err && <p className="err">{err}</p>}
+        <button className="btn olive" style={{ width: '100%', marginTop: 18 }} disabled={busy}>{busy ? 'Входим…' : 'Войти'}</button>
+      </form>
+    </div></div>
+  );
+}
+
+function CrmContainer({ session, onToast, focus }) {
+  const [bookings, setBookings] = useState(null);
+  const [clients, setClients] = useState({});
+  const [err, setErr] = useState('');
+  const load = useCallback(async () => {
+    const from = addDays(todayKey(), -180), to = addDays(todayKey(), 90);
+    const [b, c] = await Promise.all([
+      sb.from('bookings').select('*').gte('date', from).lte('date', to).order('start'),
+      sb.from('clients').select('*'),
+    ]);
+    if (b.error || c.error) { setErr((b.error || c.error).message); return; }
+    setErr('');
+    setBookings(b.data.map(fromDb));
+    setClients(Object.fromEntries(c.data.map(x => [x.phone, x])));
+  }, []);
+  useEffect(() => {
+    load();
+    let tmr;
+    const later = () => { clearTimeout(tmr); tmr = setTimeout(load, 300); };
+    const ch = sb.channel('crm-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, p => { if (p.eventType === 'INSERT' && (p.new.source || '').startsWith('Онлайн')) onToast(p.new); later(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clients' }, later)
+      .subscribe();
+    const iv = setInterval(load, 60000);
+    return () => { sb.removeChannel(ch); clearInterval(iv); clearTimeout(tmr); };
+  }, []);
+  const run = async q => { const { error } = await q; if (error) { alert('Ошибка сервера: ' + error.message); load(); } };
+  const update = (id, patch) => { setBookings(bs => bs.map(b => b.id === id ? { ...b, ...patch } : b)); run(sb.from('bookings').update(patch).eq('id', id)); };
+  const del = id => { setBookings(bs => bs.filter(b => b.id !== id)); run(sb.from('bookings').delete().eq('id', id)); };
+  const create = async b => {
+    setBookings(bs => [...bs, b]);
+    await run(sb.from('bookings').insert(toDb(b)));
+    await sb.from('clients').upsert({ phone: b.phone, name: b.name }, { onConflict: 'phone', ignoreDuplicates: true });
+    load();
+  };
+  const note = (phone, name, notes) => { setClients(c => ({ ...c, [phone]: { phone, name, history: [], ...(c[phone] || {}), notes } })); run(sb.from('clients').upsert({ phone, name, notes }, { onConflict: 'phone' })); };
+  const demo = async date => {
+    await run(sb.from('bookings').upsert(seedBookings(date).map(toDb), { onConflict: 'id', ignoreDuplicates: true }));
+    await sb.from('clients').upsert(Object.values(seedClients(date)), { onConflict: 'phone', ignoreDuplicates: true });
+    load();
+  };
+  const clearDemo = async date => { await run(sb.from('bookings').delete().eq('date', date).eq('seed', true)); load(); };
+  const logout = () => sb.auth.signOut();
+  if (err) return <div className="crm"><div className="wrap"><div className="alert red"><span className="ic">⚠️</span><span>Не удалось загрузить данные: {err} <button className="btn ghost sm" onClick={load}>Повторить</button></span></div></div></div>;
+  if (!bookings) return <div className="boot">Загружаем CRM…</div>;
+  return <CRM bookings={bookings} clients={clients} onUpdate={update} onDelete={del} onCreate={create} onNote={note} onDemo={demo} onClearDemo={clearDemo} onLogout={logout} email={session.user.email} focus={focus} />;
+}
+
 /* ================= ПРИЛОЖЕНИЕ ================= */
 function App() {
-  const [state, setState] = useState(loadState);
   const [mode, setMode] = useState(() => (location.hash === '#crm' ? 'crm' : 'site'));
   const [lang, setLang] = useState(() => store.get('hinoki-lang') || 'ru');
   const [toast, setToast] = useState(null);
   const [focus, setFocus] = useState(null);
+  const { session, isAdmin } = useAdmin();
   const t = T[lang];
 
-  useEffect(() => { store.set(STORE_KEY, state); }, [state]);
   useEffect(() => { store.set('hinoki-lang', lang); document.documentElement.lang = lang === 'kz' ? 'kk' : 'ru'; }, [lang]);
   useEffect(() => { if (mode === 'crm') { history.replaceState(null, '', '#crm'); window.scrollTo(0, 0); } else if (location.hash === '#crm') history.replaceState(null, '', location.pathname); }, [mode]);
-  useEffect(() => { if (!toast) return; const i = setTimeout(() => setToast(null), 6000); return () => clearTimeout(i); }, [toast]);
-  // синхронизация между вкладками (сайт в одной, CRM в другой)
-  useEffect(() => { const h = e => { if (e.key === STORE_KEY && e.newValue) { try { setState(JSON.parse(e.newValue)); } catch (_) {} } }; addEventListener('storage', h); return () => removeEventListener('storage', h); }, []);
+  useEffect(() => { if (!toast) return; const i = setTimeout(() => setToast(null), 8000); return () => clearTimeout(i); }, [toast]);
+  const onToast = useCallback(b => setToast({ text: `Новая онлайн-запись: ${b.name} · ${svcName(b.svc)} · ${dateLabel(b.date)} ${fmt(b.start)}`, b }), []);
 
-  const upsertClient = (clients, phone, name, patch = {}) => ({ ...clients, [phone]: { phone, name, notes: '', history: [], ...(clients[phone] || {}), ...patch } });
-  const create = b => {
-    setState(s => ({ ...s, bookings: [...s.bookings, b], clients: upsertClient(s.clients, b.phone, b.name) }));
-    setToast({ text: `Новая запись в CRM: ${b.name} · ${svcName(b.svc)} · ${dateLabel(b.date)} ${fmt(b.start)}`, b });
-  };
-  const update = (id, patch) => setState(s => ({ ...s, bookings: s.bookings.map(b => b.id === id ? { ...b, ...patch } : b) }));
-  const del = id => setState(s => ({ ...s, bookings: s.bookings.filter(b => b.id !== id) }));
-  const note = (phone, name, notes) => setState(s => ({ ...s, clients: upsertClient(s.clients, phone, name, { notes }) }));
-  const reset = () => { const d = todayKey(); setState({ bookings: seedBookings(d), clients: seedClients(d), seedDate: d }); };
-  const goCrm = b => { setMode('crm'); if (b) setFocus({ id: b.id, date: b.date, n: Date.now() }); };
-  const fresh = state.bookings.filter(b => b.fresh).length;
-  const lastNew = [...state.bookings].filter(b => b.fresh).sort((a, b) => b.createdAt - a.createdAt)[0];
+  let crmView;
+  if (session === undefined || (session && isAdmin === null)) crmView = <div className="boot">Hinoki CRM…</div>;
+  else if (!session) crmView = <Login />;
+  else if (!isAdmin) crmView = <div className="crm"><div className="wrap" style={{ maxWidth: 460 }}><div className="panel"><h2 style={{ fontSize: 30 }}>Нет доступа</h2><p style={{ color: 'var(--wood-2)' }}>Аккаунт {session.user.email} не является администратором салона.</p><button className="btn ghost" onClick={() => sb.auth.signOut()}>Выйти</button></div></div></div>;
+  else crmView = <CrmContainer session={session} onToast={onToast} focus={focus} />;
 
   return <>
     <header className="top">
@@ -1307,15 +1410,13 @@ function App() {
         <div className="sp" />
         <div className="seg"><button className={lang === 'ru' ? 'on' : ''} onClick={() => setLang('ru')}>RU</button><button className={lang === 'kz' ? 'on' : ''} onClick={() => setLang('kz')}>KZ</button></div>
         <div className="seg dark">
-          <button className={mode === 'site' ? 'on' : ''} onClick={() => setMode('site')}>{lang === 'kz' ? 'Клиент' : 'Клиент'}</button>
-          <button className={mode === 'crm' ? 'on' : ''} onClick={() => goCrm(lastNew)}>CRM{fresh > 0 && mode !== 'crm' && <span className="dot-badge">{fresh}</span>}</button>
+          <button className={mode === 'site' ? 'on' : ''} onClick={() => setMode('site')}>Клиент</button>
+          <button className={mode === 'crm' ? 'on' : ''} onClick={() => setMode('crm')}>CRM</button>
         </div>
       </div>
     </header>
-    {mode === 'site'
-      ? <ClientSite lang={lang} t={t} bookings={state.bookings} onCreate={create} onGoCrm={() => goCrm(lastNew)} />
-      : <CRM bookings={state.bookings} clients={state.clients} onUpdate={update} onDelete={del} onCreate={b => { setState(s => ({ ...s, bookings: [...s.bookings, b], clients: upsertClient(s.clients, b.phone, b.name) })); }} onNote={note} onReset={reset} focus={focus} />}
-    {toast && mode === 'site' && <div className="toast"><span>🆕 {toast.text}</span><button onClick={() => { goCrm(toast.b); setToast(null); }}>Открыть CRM</button></div>}
+    {mode === 'site' ? <ClientSite lang={lang} t={t} /> : crmView}
+    {toast && mode === 'crm' && <div className="toast"><span>🆕 {toast.text}</span><button onClick={() => { setFocus({ id: toast.b.id, date: toast.b.date, n: Date.now() }); setToast(null); }}>Открыть</button></div>}
   </>;
 }
 
