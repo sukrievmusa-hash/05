@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hinoki SPA — Астана · онлайн-запись и CRM</title>
+<meta name="description" content="Hinoki SPA, Астана: хаммам, SPA-программы, тайский массаж. Онлайн-запись с проверкой свободного времени.">
+<meta name="theme-color" content="#F7F4EF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
+<style>
+:root{
+  --bg:#F7F4EF; --bg2:#EFE9DF; --card:#FFFDF9; --olive:#5C6B57; --olive-d:#48553F; --olive-l:#E3E8DD;
+  --wood:#2C2520; --wood-2:#5A4E45; --muted:#8A7F75; --gold:#C5A880; --gold-l:#F1E7D7; --line:#E4DCCF;
+  --red:#B5523B; --red-l:#F8E4DD; --blue:#4F6D8A; --blue-l:#E2EAF1; --amber:#B8862F; --amber-l:#F6ECD6;
+  --r:18px; --sh:0 1px 2px rgba(44,37,32,.05),0 8px 28px rgba(44,37,32,.07);
+  --serif:'Cormorant Garamond','Playfair Display',Georgia,serif; --sans:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--wood);font-family:var(--sans);font-size:15px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:-.01em;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.boot{min-height:100vh;display:grid;place-items:center;font-family:var(--serif);font-size:28px;color:var(--olive)}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:40;background:rgba(247,244,239,.86);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.logo b{font-family:var(--serif);font-size:24px;font-weight:700;letter-spacing:.02em}
+.logo small{display:block;font-size:10px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;margin-top:-4px}
+.nav{display:flex;gap:4px;margin-left:12px}
+.nav a{text-decoration:none;font-size:14px;color:var(--wood-2);padding:8px 12px;border-radius:99px}
+.nav a:hover{background:var(--bg2)}
+.sp{flex:1}
+.seg{display:inline-flex;background:var(--bg2);border-radius:99px;padding:3px;gap:2px;border:1px solid var(--line)}
+.seg button{border:0;background:transparent;padding:7px 13px;border-radius:99px;font-size:13px;font-weight:600;color:var(--wood-2);white-space:nowrap;position:relative}
+.seg button.on{background:var(--card);color:var(--wood);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg.dark button.on{background:var(--wood);color:#fff}
+.dot-badge{position:absolute;top:2px;right:4px;min-width:16px;height:16px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;line-height:16px;padding:0 4px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:99px;padding:13px 22px;font-weight:600;font-size:15px;text-decoration:none;transition:transform .15s, background .2s, box-shadow .2s;white-space:nowrap}
+.btn:active{transform:scale(.98)}
+.btn.gold{background:var(--gold);color:var(--wood)}
+.btn.gold:hover{background:#B99A70}
+.btn.olive{background:var(--olive);color:#fff}
+.btn.olive:hover{background:var(--olive-d)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--wood)}
+.btn.ghost:hover{background:var(--bg2)}
+.btn.wa{background:#25D366;color:#073B1F}
+.btn.sm{padding:8px 14px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* hero */
+.hero{padding:56px 0 40px}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--olive);font-weight:600}
+.hero h1{font-size:clamp(40px,6vw,74px);line-height:1.02;margin:14px 0 18px}
+.hero h1 em{font-style:italic;color:var(--olive)}
+.hero p.lead{font-size:17px;color:var(--wood-2);max-width:520px;margin:0 0 26px}
+.rating{display:inline-flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:8px 16px 8px 8px;margin-bottom:26px}
+.rating .g{width:34px;height:34px;border-radius:50%;background:#19AA1E;color:#fff;font-weight:700;display:grid;place-items:center;font-size:12px}
+.rating b{font-size:18px}
+.stars{color:var(--gold);letter-spacing:2px}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+.hero-facts{display:flex;gap:24px;margin-top:30px;flex-wrap:wrap;color:var(--wood-2);font-size:14px}
+.hero-facts div b{display:block;font-family:var(--serif);font-size:26px;color:var(--wood)}
+.art{position:relative;aspect-ratio:4/5;border-radius:200px 200px 24px 24px;overflow:hidden;background:linear-gradient(160deg,#D9C7A8,#B79B73 55%,#8E7553);box-shadow:var(--sh)}
+.art svg{position:absolute;inset:0;width:100%;height:100%}
+.art .tag{position:absolute;left:18px;bottom:18px;right:18px;background:rgba(255,253,249,.92);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center;backdrop-filter:blur(8px)}
+.art .tag .ic{width:40px;height:40px;border-radius:12px;background:var(--olive-l);display:grid;place-items:center;font-size:20px}
+
+/* sections */
+section.s{padding:64px 0}
+.s-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:26px;flex-wrap:wrap}
+.s-head h2{font-size:clamp(32px,4vw,46px);line-height:1.05}
+.s-head p{margin:8px 0 0;color:var(--wood-2);max-width:520px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);padding:9px 16px;border-radius:99px;font-size:14px;font-weight:500;color:var(--wood-2)}
+.chip.on{background:var(--wood);border-color:var(--wood);color:#fff}
+
+.grid-sv{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.sv{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:12px;transition:box-shadow .2s, transform .2s;position:relative}
+.sv:hover{box-shadow:var(--sh);transform:translateY(-2px)}
+.sv h3{font-size:27px;line-height:1.1}
+.sv .meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--bg2);color:var(--wood-2)}
+.pill.gold{background:var(--gold-l);color:#8A6A3D}
+.pill.olive{background:var(--olive-l);color:var(--olive-d)}
+.pill.red{background:var(--red-l);color:var(--red)}
+.pill.blue{background:var(--blue-l);color:var(--blue)}
+.pill.amber{background:var(--amber-l);color:#8C6218}
+.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.steps li{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--wood-2)}
+.steps li i{font-style:normal;width:26px;height:26px;flex-shrink:0;border-radius:8px;background:var(--bg);display:grid;place-items:center;font-size:14px}
+.prices{display:flex;gap:10px;margin-top:auto;padding-top:12px;border-top:1px dashed var(--line)}
+.prices div{flex:1}
+.prices small{display:block;font-size:12px;color:var(--muted)}
+.prices b{font-size:19px;font-weight:700}
+.prices s{color:var(--muted);font-size:13px;margin-left:4px}
+.flow{display:flex;height:8px;border-radius:6px;overflow:hidden;gap:2px}
+.flow span{display:block;height:100%}
+.more{background:none;border:0;padding:0;color:var(--olive);font-weight:600;font-size:13px;text-align:left}
+.phase-list{font-size:13px;color:var(--wood-2);display:flex;flex-direction:column;gap:4px;background:var(--bg);border-radius:12px;padding:10px 12px}
+.phase-list div{display:flex;justify-content:space-between;gap:8px}
+
+/* booking widget */
+.bk{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.bk>*,.gift>*,.contacts>*,.hero .wrap>*{min-width:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:var(--sh)}
+.stepper{display:flex;gap:6px;margin-bottom:22px}
+.stepper div{flex:1}
+.stepper .bar{height:4px;border-radius:4px;background:var(--line)}
+.stepper .on .bar{background:var(--olive)}
+.stepper small{display:block;font-size:12px;color:var(--muted);margin-top:6px;font-weight:500}
+.stepper .on small{color:var(--wood)}
+.lbl{font-size:13px;font-weight:600;color:var(--wood-2);margin:18px 0 8px;display:block}
+.lbl:first-child{margin-top:0}
+.opt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.opt{border:1.5px solid var(--line);background:var(--bg);border-radius:14px;padding:13px 14px;text-align:left;display:flex;flex-direction:column;gap:2px;transition:border-color .15s, background .15s}
+.opt:hover{border-color:var(--gold)}
+.opt.on{border-color:var(--olive);background:var(--olive-l)}
+.opt b{font-size:15px}
+.opt small{color:var(--muted);font-size:12.5px}
+.opt.dis{opacity:.4;pointer-events:none}
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.day{flex:0 0 64px;border:1.5px solid var(--line);background:var(--bg);border-radius:14px;padding:8px 4px;text-align:center}
+.day small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.day b{font-size:20px;font-family:var(--serif)}
+.day.on{border-color:var(--olive);background:var(--olive);color:#fff}
+.day.on small{color:#E8EDE4}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px}
+.slot{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:10px 0;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.slot:hover:not(:disabled){border-color:var(--olive)}
+.slot.on{background:var(--olive);border-color:var(--olive);color:#fff}
+.slot:disabled{background:repeating-linear-gradient(135deg,var(--bg2),var(--bg2) 5px,var(--bg) 5px,var(--bg) 10px);color:#B9AFA4;text-decoration:line-through;cursor:not-allowed}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:10px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:4px;border:1.5px solid var(--line);display:inline-block}
+.inp{width:100%;border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:12px 14px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--olive);background:#fff}
+textarea.inp{resize:vertical;min-height:80px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.nav-btns{display:flex;justify-content:space-between;gap:10px;margin-top:24px}
+.summary h3{font-size:24px;margin-bottom:14px}
+.sum-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.sum-row span{color:var(--muted)}
+.sum-row b{text-align:right;font-weight:600}
+.sum-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px}
+.sum-total b{font-family:var(--serif);font-size:32px}
+.note{font-size:12.5px;color:var(--muted);margin-top:12px;display:flex;gap:8px}
+.success{text-align:center;padding:10px 0}
+.success .ok{width:72px;height:72px;border-radius:50%;background:var(--olive-l);color:var(--olive);display:grid;place-items:center;font-size:34px;margin:0 auto 14px}
+.success h3{font-size:34px}
+.code{font-family:ui-monospace,Menlo,monospace;background:var(--bg2);padding:3px 8px;border-radius:6px;font-size:14px}
+.err{color:var(--red);font-size:13px;margin-top:6px}
+
+/* gift */
+.gift{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.cert{aspect-ratio:1.6/1;border-radius:22px;padding:26px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 20px 50px rgba(44,37,32,.18)}
+.cert.t-wood{background:linear-gradient(135deg,#3A2F28,#2C2520 60%,#1F1916);color:#F1E7D7}
+.cert.t-sage{background:linear-gradient(135deg,#6C7B66,#5C6B57 60%,#46523F);color:#fff}
+.cert.t-sand{background:linear-gradient(135deg,#F7F0E4,#EADCC4);color:var(--wood);border:1px solid var(--line)}
+.cert svg.bgart{position:absolute;right:-30px;top:-30px;width:60%;opacity:.16}
+.cert .c-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative}
+.cert .c-top b{font-family:var(--serif);font-size:26px;letter-spacing:.04em}
+.cert .c-top small{font-size:10px;letter-spacing:.24em;text-transform:uppercase;opacity:.75;display:block}
+.cert .c-val{font-family:var(--serif);font-size:clamp(30px,5vw,46px);line-height:1;position:relative}
+.cert .c-val small{display:block;font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.7;margin-bottom:6px}
+.cert .c-bot{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;font-size:13px;position:relative}
+.cert .c-msg{font-family:var(--serif);font-style:italic;font-size:16px;opacity:.9;max-width:70%}
+.themes{display:flex;gap:10px}
+.themes button{width:42px;height:42px;border-radius:50%;border:3px solid transparent;outline:1px solid var(--line)}
+.themes button.on{border-color:var(--gold)}
+
+/* contacts */
+.contacts{display:grid;grid-template-columns:1fr 1.2fr;gap:20px}
+.c-list{display:flex;flex-direction:column;gap:12px}
+.c-item{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.c-item .ic{width:42px;height:42px;border-radius:12px;background:var(--olive-l);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.c-item b{display:block}
+.c-item span{color:var(--wood-2);font-size:14px}
+.map{border-radius:22px;overflow:hidden;border:1px solid var(--line);min-height:380px;background:var(--bg2);position:relative}
+.map iframe{border:0;width:100%;height:100%;position:absolute;inset:0}
+footer{padding:36px 0 110px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:30px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.fab{position:fixed;left:16px;right:16px;bottom:14px;z-index:30;display:none}
+.fab .btn{width:100%;box-shadow:0 10px 30px rgba(44,37,32,.25)}
+
+/* CRM */
+.crm{padding:22px 0 60px}
+.crm-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.crm-bar h2{font-size:32px;margin-right:auto}
+.datenav{display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:3px}
+.datenav button{border:0;background:transparent;width:34px;height:34px;border-radius:50%;font-size:16px}
+.datenav button:hover{background:var(--bg2)}
+.datenav span{padding:0 8px;font-weight:600;font-size:14px;min-width:132px;text-align:center}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+.kpi small{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.kpi b{display:block;font-family:var(--serif);font-size:32px;line-height:1.1;margin-top:4px}
+.kpi .sub{font-size:12.5px;color:var(--wood-2)}
+.loadbars{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.loadbars div{display:grid;grid-template-columns:62px 1fr 34px;gap:8px;align-items:center;font-size:12px;color:var(--wood-2)}
+.loadbars .tr{height:6px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.loadbars b{font-family:var(--sans);font-size:12px;display:inline;margin:0;line-height:1.2;font-weight:600}
+.loadbars .tr i{display:block;height:100%;background:var(--olive);border-radius:4px}
+.alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.alert{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px;font-size:14px;border:1px solid}
+.alert.red{background:var(--red-l);border-color:#EDC3B6;color:#7E3524}
+.alert.amber{background:var(--amber-l);border-color:#EAD4A6;color:#6E4C12}
+.alert.ok{background:var(--olive-l);border-color:#CBD5C2;color:var(--olive-d)}
+.alert b{font-weight:700}
+.alert .ic{font-size:18px;line-height:1.2}
+.tl-wrap{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.tl-scroll{overflow:auto;max-height:76vh;position:relative}
+.tl{display:grid;position:relative;min-width:max-content}
+.tl-head{position:sticky;top:0;z-index:6;background:var(--card);border-bottom:1px solid var(--line);padding:10px 8px;font-size:13px;font-weight:700;line-height:1.2}
+.tl-head small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+.tl-head .ld{height:3px;background:var(--bg2);border-radius:3px;margin-top:6px;overflow:hidden}
+.tl-head .ld i{display:block;height:100%;background:var(--gold)}
+.tl-corner{position:sticky;left:0;z-index:7}
+.tl-hours{position:sticky;left:0;z-index:5;background:var(--card);border-right:1px solid var(--line)}
+.tl-hours div{position:absolute;right:8px;font-size:11.5px;color:var(--muted);transform:translateY(-50%);font-variant-numeric:tabular-nums}
+.tl-col{position:relative;border-right:1px solid var(--line)}
+.tl-col.tea{background:repeating-linear-gradient(90deg,rgba(197,168,128,.05),rgba(197,168,128,.05) 2px,transparent 2px,transparent 8px)}
+.tl-line{position:absolute;left:0;right:0;border-top:1px solid #EFE8DD}
+.tl-line.half{border-top:1px dashed #F3EEE6}
+.now{position:absolute;left:0;right:0;border-top:2px solid var(--red);z-index:4;pointer-events:none}
+.now::before{content:'';position:absolute;left:-4px;top:-5px;width:8px;height:8px;border-radius:50%;background:var(--red)}
+.ev{position:absolute;border-radius:10px;padding:5px 7px;font-size:11.5px;line-height:1.25;overflow:hidden;cursor:pointer;border:1px solid rgba(0,0,0,.06);border-left:4px solid;transition:box-shadow .15s, transform .15s, opacity .2s;text-align:left}
+.ev:hover,.ev.hl{box-shadow:0 6px 18px rgba(44,37,32,.18);z-index:3;transform:translateY(-1px)}
+.ev b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev .t{font-variant-numeric:tabular-nums;opacity:.75}
+.ev .tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}
+.ev .tg{font-size:10px;font-weight:700;padding:1px 5px;border-radius:5px;background:rgba(255,255,255,.75)}
+.ev.k-hammam{background:#F3E9DA;border-left-color:#A07B4F}
+.ev.k-massage{background:#E6EBE1;border-left-color:var(--olive)}
+.ev.k-care{background:#F6EEDD;border-left-color:var(--gold)}
+.ev.k-tea{background:#EFE6F0;border-left-color:#8C6B8E}
+.ev.st-cancel{opacity:.35;text-decoration:line-through}
+.ev.st-paid{background-image:linear-gradient(0deg,rgba(255,255,255,.35),rgba(255,255,255,.35))}
+.ev.conflict{outline:2px solid var(--red);outline-offset:-2px}
+.ev.fresh{animation:pulse 1.6s ease-out 3}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(197,168,128,.9)}100%{box-shadow:0 0 0 12px rgba(197,168,128,0)}}
+.tg.soft{color:#3F6A8C}.tg.medium{color:#8C6218}.tg.deep{color:var(--red)}
+.st-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px}
+
+.ov{position:fixed;inset:0;background:rgba(44,37,32,.38);z-index:60;display:flex;justify-content:flex-end;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.drawer{background:var(--bg);width:min(460px,100%);height:100%;overflow:auto;padding:22px;animation:slide .25s ease-out}
+@keyframes slide{from{transform:translateX(30px);opacity:.4}}
+.drawer h3{font-size:30px}
+.x{border:0;background:var(--bg2);width:36px;height:36px;border-radius:50%;font-size:18px;flex-shrink:0}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:12px}
+.st-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.st-btn{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:10px;font-size:13px;font-weight:600;text-align:left}
+.st-btn.on{border-color:var(--wood);background:var(--wood);color:#fff}
+.seg-list div{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.seg-list div:last-child{border:0}
+
+.clients{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.cl{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+.cl-h{display:flex;gap:12px;align-items:center}
+.ava{width:44px;height:44px;border-radius:50%;background:var(--gold-l);color:#8A6A3D;display:grid;place-items:center;font-weight:700;flex-shrink:0}
+.cl-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.cl-stats div{background:var(--bg);border-radius:10px;padding:8px 10px}
+.cl-stats small{display:block;font-size:11px;color:var(--muted)}
+.cl-stats b{font-size:15px}
+.hist{font-size:13px;display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.hist div{display:flex;justify-content:space-between;gap:8px;color:var(--wood-2)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--wood);color:#fff;padding:12px 18px;border-radius:14px;z-index:80;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:14px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px);animation:fade .2s}
+.toast button{background:var(--gold);color:var(--wood);border:0;border-radius:99px;padding:6px 12px;font-weight:600;font-size:13px;white-space:nowrap}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;margin-top:12px;color:var(--wood-2)}
+.avail{margin-top:12px;padding:10px 12px;border-radius:12px;font-size:13.5px}
+
+@media (max-width:960px){
+  .hero .wrap{grid-template-columns:1fr}
+  .art{max-width:420px;aspect-ratio:1/1;border-radius:200px 200px 24px 24px;width:100%;margin:0 auto}
+  .grid-sv{grid-template-columns:repeat(2,1fr)}
+  .bk{grid-template-columns:1fr}
+  .gift,.contacts{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .nav{display:none}
+}
+@media (max-width:620px){
+  body{font-size:14.5px}
+  .wrap{padding:0 14px}
+  .top .wrap{height:58px;gap:8px}
+  .logo small{display:none}
+  .logo b{font-size:21px}
+  .seg button{padding:6px 9px;font-size:12px}
+  .hero{padding:30px 0 20px}
+  section.s{padding:44px 0}
+  .grid-sv{grid-template-columns:1fr}
+  .panel{padding:18px;border-radius:20px}
+  .opt-grid{grid-template-columns:1fr}
+  .row2{grid-template-columns:1fr}
+  .fab{display:block}
+  .kpi b{font-size:26px}
+  .crm-bar h2{font-size:26px;width:100%}
+  .stepper small{font-size:10.5px}
+  .map{min-height:300px}
+  .cert{padding:18px;border-radius:18px}
+}
+</style>
+</head>
+<body>
+<div id="root"><div class="boot">Hinoki SPA…</div></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+/* ================= БАЗОВЫЕ ДАННЫЕ ================= */
+const OPEN = 11 * 60, CLOSE = 24 * 60, LAST_SLOT = 22 * 60 + 30;
+const WA_PHONE = '77080394182';
+const PHONE_VIEW = '+7 (708) 039-41-82';
+const ADDRESS = { ru: 'пр. Бауыржана Момышулы, 2А, Астана', kz: 'Бауыржан Момышұлы даңғылы, 2А, Астана' };
+
+const RESOURCES = [
+  { id: 'h1', name: 'Хаммам №1', sub: 'Зона хаммама', kind: 'hammam' },
+  { id: 'h2', name: 'Хаммам №2', sub: 'Зона хаммама', kind: 'hammam' },
+  { id: 'mali', name: 'Мастер Мали', sub: 'Таиланд', kind: 'thai' },
+  { id: 'noy', name: 'Мастер Ной', sub: 'Таиланд', kind: 'thai' },
+  { id: 'aigerim', name: 'Мастер Айгерим', sub: 'Пилинг / уход', kind: 'local' },
+  { id: 'tea', name: 'Чайная комната', sub: 'макс. 2 пары', kind: 'tea' },
+];
+const MASTERS = ['mali', 'noy', 'aigerim'];
+
+const P120 = [['hammam', 0, 40], ['massage', 40, 100], ['tea', 100, 120]];
+const P150 = [['hammam', 0, 40], ['care', 40, 70], ['massage', 70, 130], ['tea', 130, 150]];
+const PINTRO = [['hammam', 0, 40], ['care', 40, 60], ['massage', 60, 120]];
+const PMOR = [['hammam', 0, 45], ['care', 45, 75], ['massage', 75, 135], ['tea', 135, 150]];
+
+const STEP = {
+  hammam: { i: '♨️', ru: 'Хаммам', kz: 'Хаммам' },
+  scrub: { i: '🧂', ru: 'Скраб для тела', kz: 'Дене скрабы' },
+  peel_full: { i: '🫧', ru: 'Полноценный пилинг', kz: 'Толық пилинг' },
+  peel: { i: '🫧', ru: 'Пилинг', kz: 'Пилинг' },
+  peel_body: { i: '🫧', ru: 'Пилинг тела', kz: 'Дене пилингі' },
+  wash: { i: '💧', ru: 'Помывка', kz: 'Жуыну' },
+  face_mask: { i: '🌿', ru: 'Маска для лица', kz: 'Бет маскасы' },
+  massage: { i: '🤲', ru: 'Массаж', kz: 'Массаж' },
+  massage60: { i: '🤲', ru: 'Массаж 60 мин', kz: 'Массаж 60 мин' },
+  tea: { i: '🍵', ru: 'Чайная церемония', kz: 'Шай рәсімі' },
+  choco: { i: '🍫', ru: 'Шоколадное обёртывание', kz: 'Шоколадты орау' },
+  algin: { i: '🌊', ru: 'Альгинатная маска', kz: 'Альгинатты маска' },
+  moroccan: { i: '🏺', ru: 'Марокканский уход', kz: 'Марокколық күтім' },
+};
+const PHASE = {
+  hammam: { ru: 'Хаммам, скраб / пилинг', kz: 'Хаммам, скраб / пилинг', c: '#A07B4F' },
+  care: { ru: 'Уход у мастера', kz: 'Шебердің күтімі', c: '#C5A880' },
+  massage: { ru: 'Массаж', kz: 'Массаж', c: '#5C6B57' },
+  tea: { ru: 'Чайная церемония', kz: 'Шай рәсімі', c: '#8C6B8E' },
+};
+
+const SERVICES = [
+  { id: 'tynys', cat: 'program', name: { ru: 'Hinoki Tynys', kz: 'Hinoki Tynys' }, dur: 120, p1: 20900, p2: 35000, steps: ['hammam', 'scrub', 'massage', 'tea'], phases: P120,
+    d: { ru: 'Лёгкий ритуал «вдоха»: прогрев, обновление кожи и спокойный массаж.', kz: 'Жеңіл «тыныс» рәсімі: жылыну, теріні жаңарту және тыныш массаж.' } },
+  { id: 'shabyt', cat: 'program', name: { ru: 'Hinoki Shabyt', kz: 'Hinoki Shabyt' }, dur: 120, p1: 24900, p2: 45000, steps: ['hammam', 'peel_full', 'massage', 'tea'], phases: P120,
+    d: { ru: 'Глубокое очищение кесе-пилингом и вдохновляющий массаж.', kz: 'Кесе-пилингпен терең тазарту және шабыт беретін массаж.' } },
+  { id: 'janaru', cat: 'program', name: { ru: 'Hinoki Janaru', kz: 'Hinoki Janaru' }, dur: 150, p1: 27900, p2: 50000, steps: ['hammam', 'peel', 'scrub', 'massage', 'tea'], phases: P150,
+    d: { ru: 'Полное обновление: пилинг, скраб и долгий массаж.', kz: 'Толық жаңару: пилинг, скраб және ұзақ массаж.' } },
+  { id: 'intro', cat: 'program', name: { ru: 'Знакомство с Hinoki', kz: 'Hinoki-мен танысу' }, dur: 120, p1: 21000, p2: 38000, steps: ['hammam', 'peel_body', 'wash', 'face_mask', 'massage60'], phases: PINTRO,
+    d: { ru: 'Лучший первый визит: всё самое любимое гостями за 2 часа.', kz: 'Алғашқы сапарға тамаша: қонақтардың сүйікті рәсімдері 2 сағатта.' } },
+  { id: 'deep', cat: 'program', name: { ru: 'Hinoki Deep Relax', kz: 'Hinoki Deep Relax' }, dur: 150, p1: 38000, p2: 72000, steps: ['hammam', 'peel', 'choco', 'algin', 'massage60', 'tea'], phases: P150,
+    d: { ru: 'Максимальное расслабление: обёртывание, маска и массаж 60 минут.', kz: 'Барынша босаңсу: орау, маска және 60 минуттық массаж.' } },
+  { id: 'moroccan', cat: 'program', name: { ru: 'Moroccan Ritual', kz: 'Moroccan Ritual' }, dur: 150, p1: 48000, p2: 67200, old2: 96000, promo: true, steps: ['moroccan', 'hammam', 'massage', 'tea'], phases: PMOR,
+    d: { ru: 'Аутентичный марокканский уход с мылом бельди и глиной гассуль.', kz: 'Бельди сабыны мен гассуль балшығымен марокколық күтім.' } },
+  { id: 'thai', cat: 'massage', name: { ru: 'Тайский традиционный массаж', kz: 'Дәстүрлі тай массажы' }, prices: { 60: 16000, 90: 22000 }, steps: ['massage'],
+    d: { ru: 'Растяжки и акупрессура без масла. Лучше всего — у мастеров из Таиланда.', kz: 'Майсыз созылу және акупрессура. Тай шеберлерінде ең жақсысы.' } },
+  { id: 'classic', cat: 'massage', name: { ru: 'Классический / Релакс массаж', kz: 'Классикалық / Релакс массаж' }, prices: { 60: 15000, 90: 20000 }, steps: ['massage'],
+    d: { ru: 'Мягкие длинные движения, снимает усталость и стресс.', kz: 'Жұмсақ ұзын қозғалыстар, шаршау мен күйзелісті басады.' } },
+  { id: 'bali', cat: 'massage', name: { ru: 'Балийский oil-массаж', kz: 'Бали oil-массажы' }, prices: { 60: 17000, 90: 23000 }, steps: ['massage'],
+    d: { ru: 'Тёплое ароматное масло и глубокие ритмичные техники.', kz: 'Жылы хош иісті май және терең ырғақты техникалар.' } },
+  { id: 'sport', cat: 'massage', name: { ru: 'Антицеллюлитный / Спортивный', kz: 'Антицеллюлиттік / Спорттық' }, prices: { 60: 16000, 90: 22000 }, steps: ['massage'],
+    d: { ru: 'Интенсивная проработка мышц и зон с отёками.', kz: 'Бұлшықеттер мен ісінген аймақтарды қарқынды өңдеу.' } },
+];
+const SVC = Object.fromEntries(SERVICES.map(s => [s.id, s]));
+
+const STATUSES = [
+  { id: 'wait', ru: 'Ожидается', c: '#8A7F75' },
+  { id: 'hammam', ru: 'В хаммаме', c: '#A07B4F' },
+  { id: 'massage', ru: 'На массаже', c: '#5C6B57' },
+  { id: 'tea', ru: 'Чайная церемония', c: '#8C6B8E' },
+  { id: 'paid', ru: 'Оплачено Kaspi QR', c: '#C0392B' },
+  { id: 'cancel', ru: 'Отмена', c: '#B9AFA4' },
+];
+const ST = Object.fromEntries(STATUSES.map(s => [s.id, s]));
+const INTENS = {
+  soft: { ru: 'Мягкий релакс', kz: 'Жұмсақ релакс', tag: 'Мягко' },
+  medium: { ru: 'Средняя', kz: 'Орташа', tag: 'Средне' },
+  deep: { ru: 'Глубокая проработка', kz: 'Терең өңдеу', tag: 'Жёстко' },
+};
+const PREFS = {
+  thai: { ru: 'Специалист из Таиланда', kz: 'Тайланд маманы', s: { ru: 'Мали или Ной', kz: 'Мали немесе Ной' } },
+  local: { ru: 'Местный мастер', kz: 'Жергілікті шебер', s: { ru: 'Айгерим', kz: 'Айгерим' } },
+  any: { ru: 'Без разницы', kz: 'Маңызды емес', s: { ru: 'Подберём свободного', kz: 'Бос шеберді таңдаймыз' } },
+};
+
+/* ================= ПЕРЕВОДЫ ================= */
+const T = {
+  ru: {
+    nav_services: 'Услуги', nav_book: 'Запись', nav_gift: 'Сертификаты', nav_contacts: 'Контакты',
+    mode_site: 'Сайт', mode_crm: 'CRM', hero_eyebrow: 'Японский SPA · Астана',
+    hero_title_1: 'Место, где отдыхает', hero_title_2: 'и душа, и тело',
+    hero_lead: 'Хаммам, авторские SPA-ритуалы и тайский массаж в тишине дерева хиноки. Выберите программу и время — мы проверим свободные слоты сразу.',
+    book_online: 'Записаться онлайн', see_menu: 'Смотреть меню', reviews: 'отзывов на 2ГИС',
+    fact_hours: 'ежедневно', fact_park: 'мест парковки', fact_masters: 'мастера из Таиланда',
+    services_title: 'Меню ритуалов', services_sub: 'Каждая программа — это последовательность этапов. Нажмите «Подробнее», чтобы увидеть хронометраж.',
+    f_all: 'Все', f_two: 'Для двоих', f_prog: 'SPA-программы', f_mass: 'Массажи',
+    min: 'мин', for1: 'Для одного', for2: 'Для двоих', choose: 'Выбрать', details: 'Подробнее', hide: 'Скрыть',
+    promo: 'Акция', instead: 'вместо', composition: 'Состав',
+    book_title: 'Онлайн-запись', book_sub: 'Свободное время берётся прямо из расписания салона — занятые окна недоступны.',
+    s1: 'Услуга', s2: 'Дата и время', s3: 'Предпочтения', s4: 'Контакты',
+    format: 'Формат', service: 'Услуга', duration: 'Длительность',
+    date: 'Дата', time: 'Время', free: 'Свободно', busy: 'Занято', chosen: 'Выбрано',
+    no_slots: 'На эту дату свободных окон нет — выберите другой день.',
+    master: 'Мастер', intensity: 'Интенсивность массажа', health: 'Комментарий по здоровью / аллергиям',
+    health_ph: 'Например: аллергия на цитрусовые масла, беременность, болит поясница…',
+    name: 'Имя', phone: 'Телефон', name_ph: 'Как к вам обращаться', next: 'Далее', back: 'Назад', confirm: 'Подтвердить бронь',
+    summary: 'Ваша запись', total: 'Итого', guests: 'Гостей', not_chosen: 'не выбрано',
+    pay_note: 'Оплата на месте: Kaspi QR, карта или наличные. Отменить или перенести можно по WhatsApp.',
+    done_title: 'Вы записаны!', done_text: 'Бронь уже в расписании салона. Отправьте подтверждение администратору в WhatsApp — так мы точно ничего не перепутаем.',
+    send_wa: 'Отправить подтверждение в WhatsApp', new_booking: 'Новая запись', booking_no: 'Номер брони',
+    slot_taken: 'Это время только что заняли. Выберите другое.', phone_err: 'Введите номер полностью', name_err: 'Укажите имя',
+    gift_title: 'Подарочный сертификат', gift_sub: 'Соберите электронный сертификат на сумму или программу — пришлём его в WhatsApp в течение часа.',
+    g_amount: 'На сумму', g_program: 'На программу', g_to: 'Кому', g_from: 'От кого', g_msg: 'Пожелание', g_theme: 'Оформление',
+    g_to_ph: 'Имя получателя', g_from_ph: 'Ваше имя', g_msg_ph: 'Пусть этот день будет только для тебя',
+    g_order: 'Оформить в WhatsApp', g_valid: 'Действует 6 месяцев', g_cert: 'Подарочный сертификат', g_for: 'для', g_custom: 'Своя сумма',
+    contacts_title: 'Как нас найти', hours: 'Ежедневно с 11:00 до 00:00', parking: 'Бесплатная парковка на 90 мест',
+    pay: 'Способы оплаты', pay_list: 'Kaspi QR, банковские карты, наличные', route_2gis: 'Маршрут в 2ГИС', write_wa: 'Написать в WhatsApp',
+    footer: 'Hinoki SPA · Астана · Прототип онлайн-записи и CRM',
+    soon_close: 'не успеем до закрытия', today: 'Сегодня', tomorrow: 'Завтра',
+  },
+  kz: {
+    nav_services: 'Қызметтер', nav_book: 'Жазылу', nav_gift: 'Сертификаттар', nav_contacts: 'Байланыс',
+    mode_site: 'Сайт', mode_crm: 'CRM', hero_eyebrow: 'Жапон SPA · Астана',
+    hero_title_1: 'Жан мен тән', hero_title_2: 'бірге демалатын орын',
+    hero_lead: 'Хаммам, авторлық SPA-рәсімдер және хиноки ағашының тыныштығындағы тай массажы. Бағдарлама мен уақытты таңдаңыз — бос уақытты бірден тексереміз.',
+    book_online: 'Онлайн жазылу', see_menu: 'Мәзірді көру', reviews: '2ГИС-тегі пікір',
+    fact_hours: 'күн сайын', fact_park: 'тұрақ орны', fact_masters: 'Тайланд шеберлері',
+    services_title: 'Рәсімдер мәзірі', services_sub: 'Әр бағдарлама — кезеңдер тізбегі. Уақытын көру үшін «Толығырақ» батырмасын басыңыз.',
+    f_all: 'Барлығы', f_two: 'Екі адамға', f_prog: 'SPA-бағдарламалар', f_mass: 'Массаждар',
+    min: 'мин', for1: 'Бір адамға', for2: 'Екі адамға', choose: 'Таңдау', details: 'Толығырақ', hide: 'Жасыру',
+    promo: 'Акция', instead: 'орнына', composition: 'Құрамы',
+    book_title: 'Онлайн жазылу', book_sub: 'Бос уақыт салонның кестесінен алынады — бос емес уақыт қолжетімсіз.',
+    s1: 'Қызмет', s2: 'Күні мен уақыты', s3: 'Қалаулар', s4: 'Байланыс',
+    format: 'Формат', service: 'Қызмет', duration: 'Ұзақтығы',
+    date: 'Күні', time: 'Уақыты', free: 'Бос', busy: 'Бос емес', chosen: 'Таңдалды',
+    no_slots: 'Бұл күні бос уақыт жоқ — басқа күнді таңдаңыз.',
+    master: 'Шебер', intensity: 'Массаж қарқындылығы', health: 'Денсаулық / аллергия бойынша түсініктеме',
+    health_ph: 'Мысалы: цитрус майларына аллергия, жүктілік, бел ауырады…',
+    name: 'Аты', phone: 'Телефон', name_ph: 'Сізге қалай жүгінеміз', next: 'Келесі', back: 'Артқа', confirm: 'Брондауды растау',
+    summary: 'Сіздің жазылуыңыз', total: 'Барлығы', guests: 'Қонақтар', not_chosen: 'таңдалмаған',
+    pay_note: 'Төлем орнында: Kaspi QR, карта немесе қолма-қол. Болдырмау не ауыстыру — WhatsApp арқылы.',
+    done_title: 'Сіз жазылдыңыз!', done_text: 'Бронь салон кестесінде тұр. Әкімшіге WhatsApp-та растау жіберіңіз — ештеңе шатаспайды.',
+    send_wa: 'WhatsApp-қа растау жіберу', new_booking: 'Жаңа жазылу', booking_no: 'Бронь нөмірі',
+    slot_taken: 'Бұл уақытты жаңа ғана алып қойды. Басқасын таңдаңыз.', phone_err: 'Нөмірді толық енгізіңіз', name_err: 'Атыңызды жазыңыз',
+    gift_title: 'Сыйлық сертификаты', gift_sub: 'Сомаға немесе бағдарламаға электронды сертификат жасаңыз — бір сағат ішінде WhatsApp-қа жібереміз.',
+    g_amount: 'Сомаға', g_program: 'Бағдарламаға', g_to: 'Кімге', g_from: 'Кімнен', g_msg: 'Тілек', g_theme: 'Безендіру',
+    g_to_ph: 'Алушының аты', g_from_ph: 'Сіздің атыңыз', g_msg_ph: 'Бұл күн тек саған арналсын',
+    g_order: 'WhatsApp арқылы рәсімдеу', g_valid: '6 ай жарамды', g_cert: 'Сыйлық сертификаты', g_for: '', g_custom: 'Өз сомасы',
+    contacts_title: 'Бізді қалай табуға болады', hours: 'Күн сайын 11:00-ден 00:00-ге дейін', parking: '90 орындық тегін тұрақ',
+    pay: 'Төлем тәсілдері', pay_list: 'Kaspi QR, банк карталары, қолма-қол', route_2gis: '2ГИС-те бағыт', write_wa: 'WhatsApp-қа жазу',
+    footer: 'Hinoki SPA · Астана · Онлайн жазылу және CRM прототипі',
+    soon_close: 'жабылуға дейін үлгермейміз', today: 'Бүгін', tomorrow: 'Ертең',
+  },
+};
+
+/* ================= УТИЛИТЫ ================= */
+const pad = n => String(n).padStart(2, '0');
+const fmt = m => `${pad(Math.floor(m / 60) % 24)}:${pad(m % 60)}`;
+const money = n => (Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₸';
+const dkey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const todayKey = () => dkey(new Date());
+const addDays = (key, n) => { const [y, m, d] = key.split('-').map(Number); const x = new Date(y, m - 1, d); x.setDate(x.getDate() + n); return dkey(x); };
+const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+const DOW = { ru: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'], kz: ['Жс', 'Дс', 'Сс', 'Ср', 'Бс', 'Жм', 'Сб'] };
+const MON = { ru: ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'], kz: ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'мамыр', 'маусым', 'шілде', 'тамыз', 'қыркүйек', 'қазан', 'қараша', 'желтоқсан'] };
+const dateObj = key => { const [y, m, d] = key.split('-').map(Number); return new Date(y, m - 1, d); };
+const dateLabel = (key, lang = 'ru') => { const d = dateObj(key); return `${d.getDate()} ${MON[lang][d.getMonth()]}, ${DOW[lang][d.getDay()]}`; };
+const phoneDigits = s => { let d = (s || '').replace(/\D/g, ''); if (d.startsWith('8')) d = '7' + d.slice(1); if (d && !d.startsWith('7')) d = '7' + d; return d.slice(0, 11); };
+const phoneFmt = s => { const d = phoneDigits(s); if (!d) return ''; let r = '+7'; if (d.length > 1) r += ' (' + d.slice(1, 4); if (d.length >= 4) r += ')'; if (d.length > 4) r += ' ' + d.slice(4, 7); if (d.length > 7) r += '-' + d.slice(7, 9); if (d.length > 9) r += '-' + d.slice(9, 11); return r; };
+const svcName = (id, lang = 'ru') => SVC[id] ? SVC[id].name[lang] : id;
+const durOf = b => SVC[b.svc].cat === 'massage' ? b.dur : SVC[b.svc].dur;
+const phasesOf = (svc, dur) => svc.cat === 'massage' ? [['massage', 0, dur]] : svc.phases;
+const priceOf = (svc, dur, guests) => svc.cat === 'massage' ? svc.prices[dur] * guests : (guests === 2 ? svc.p2 : svc.p1);
+const initials = n => (n || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const uid = () => Math.random().toString(36).slice(2, 8);
+const bookingCode = id => 'HN-' + id.slice(-4).toUpperCase();
+const waLink = text => `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(text)}`;
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+
+/* ================= ДВИЖОК РАСПИСАНИЯ ================= */
+const activeOn = (bookings, date, ignoreId) => bookings.filter(b => b.date === date && b.status !== 'cancel' && b.id !== ignoreId);
+const isBusy = (list, res, a, z) => list.some(b => b.segs.some(s => s.res === res && s.from < z && s.to > a));
+const teaLoad = (list, a, z) => list.filter(b => b.segs.some(s => s.res === 'tea' && s.from < z && s.to > a)).length;
+
+/** Подбирает ресурсы под запись. force=true — ручной режим администратора (разрешает накладки). */
+function allocate({ svcId, dur, guests, start, pref }, bookings, date, { force = false, ignoreId } = {}) {
+  const svc = SVC[svcId]; if (!svc) return null;
+  const phases = phasesOf(svc, dur);
+  const end = start + phases[phases.length - 1][2];
+  if (!force && (start < OPEN || end > CLOSE)) return null;
+  const list = activeOn(bookings, date, ignoreId);
+  const segs = [];
+  for (const [kind, f, t] of phases) {
+    const a = start + f, z = start + t;
+    if (kind === 'hammam') {
+      const h = ['h1', 'h2'].find(r => !isBusy(list, r, a, z));
+      if (!h && !force) return null;
+      segs.push({ res: h || 'h1', from: a, to: z, kind });
+    } else if (kind === 'care') {
+      if (isBusy(list, 'aigerim', a, z) && !force) return null;
+      segs.push({ res: 'aigerim', from: a, to: z, kind });
+    } else if (kind === 'massage') {
+      const order = pref === 'thai' ? (guests === 2 ? ['mali', 'noy'] : ['mali', 'noy'])
+        : pref === 'local' ? ['aigerim', 'mali', 'noy'] : ['mali', 'noy', 'aigerim'];
+      let picked = order.filter(r => !isBusy(list, r, a, z) && !segs.some(s => s.res === r && s.from < z && s.to > a)).slice(0, guests);
+      if (pref === 'local' && guests === 1 && picked[0] !== 'aigerim') picked = [];
+      if (picked.length < guests) { if (!force) return null; picked = order.slice(0, guests); }
+      picked.forEach(r => segs.push({ res: r, from: a, to: z, kind }));
+    } else if (kind === 'tea') {
+      if (teaLoad(list, a, z) >= 2 && !force) return null;
+      segs.push({ res: 'tea', from: a, to: z, kind });
+    }
+  }
+  return segs;
+}
+
+/** Слоты для клиентского виджета */
+function slotsFor(form, bookings, date) {
+  const out = [];
+  const isToday = date === todayKey();
+  const nm = nowMin();
+  for (let m = OPEN; m <= LAST_SLOT; m += 30) {
+    let state = 'free';
+    if (isToday && m < nm + 20) state = 'past';
+    else {
+      const svc = SVC[form.svcId];
+      const total = phasesOf(svc, form.dur).slice(-1)[0][2];
+      if (m + total > CLOSE) state = 'late';
+      else if (!allocate({ ...form, start: m }, bookings, date)) state = 'busy';
+    }
+    out.push({ m, state });
+  }
+  return out;
+}
+
+/** Алерты: узкие места и накладки */
+function computeAlerts(bookings, date) {
+  const list = activeOn(bookings, date);
+  const alerts = [];
+  const zones = [['tea', 'чайной комнате', 'tea'], ['hammam', 'зоне хаммама', 'hammam']];
+  for (const [kind, label] of zones) {
+    let runStart = null, maxN = 0, who = new Set();
+    const flush = (t) => { if (runStart !== null) { alerts.push({ type: 'red', key: kind + runStart, text: <span><b>{maxN} пары одновременно в {label}</b> с {fmt(runStart)} до {fmt(t)} — {[...who].join(', ')}. Предложите гостям сдвиг или разведите по времени.</span> }); runStart = null; maxN = 0; who = new Set(); } };
+    for (let t = OPEN; t < CLOSE; t += 5) {
+      const here = list.filter(b => b.segs.some(s => s.kind === kind && s.from <= t && s.to > t));
+      if (here.length > 2) { if (runStart === null) runStart = t; maxN = Math.max(maxN, here.length); here.forEach(b => who.add(b.name)); }
+      else flush(t);
+    }
+    flush(CLOSE);
+  }
+  // накладки по ресурсам
+  for (const r of RESOURCES.filter(r => r.kind !== 'tea')) {
+    const segs = list.flatMap(b => b.segs.filter(s => s.res === r.id).map(s => ({ ...s, b })));
+    for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) {
+      const A = segs[i], B = segs[j];
+      if (A.b.id !== B.b.id && A.from < B.to && B.from < A.to) alerts.push({ type: 'red', key: r.id + A.b.id + B.b.id, ids: [A.b.id, B.b.id], text: <span><b>Накладка: {r.name}</b> — {A.b.name} и {B.b.name} пересекаются {fmt(Math.max(A.from, B.from))}–{fmt(Math.min(A.to, B.to))}.</span> });
+    }
+  }
+  // предупреждение о высокой загрузке чайной
+  for (let t = OPEN; t < CLOSE; t += 30) {
+    const n = list.filter(b => b.segs.some(s => s.kind === 'tea' && s.from < t + 30 && s.to > t)).length;
+    if (n === 2 && !alerts.some(a => a.type === 'amber')) alerts.push({ type: 'amber', key: 'tea2' + t, text: <span>Чайная комната заполнена на 100% около <b>{fmt(t)}</b> — новые записи на это время сайт уже не принимает.</span> });
+  }
+  return alerts;
+}
+const conflictIds = (bookings, date) => {
+  const list = activeOn(bookings, date); const ids = new Set();
+  for (const r of RESOURCES.filter(r => r.kind !== 'tea')) {
+    const segs = list.flatMap(b => b.segs.filter(s => s.res === r.id).map(s => ({ ...s, id: b.id })));
+    segs.forEach((A, i) => segs.slice(i + 1).forEach(B => { if (A.id !== B.id && A.from < B.to && B.from < A.to) { ids.add(A.id); ids.add(B.id); } }));
+  }
+  return ids;
+};
+
+/* ================= ДЕМО-ДАННЫЕ ================= */
+function seedBookings(date) {
+  const mk = (id, name, phone, svc, guests, start, pref, intensity, status, assign, comment = '', dur = 60) => {
+    const s = SVC[svc]; const segs = [];
+    phasesOf(s, dur).forEach(([kind, f, t]) => {
+      const a = start + f, z = start + t;
+      if (kind === 'hammam') segs.push({ res: assign.h, from: a, to: z, kind });
+      if (kind === 'care') segs.push({ res: 'aigerim', from: a, to: z, kind });
+      if (kind === 'massage') assign.m.forEach(r => segs.push({ res: r, from: a, to: z, kind }));
+      if (kind === 'tea') segs.push({ res: 'tea', from: a, to: z, kind });
+    });
+    return { id: 'seed' + id, seed: true, date, name, phone, svc, dur, guests, start, pref, intensity, status, comment, segs, price: priceOf(s, dur, guests), source: id === 5 ? 'WhatsApp (вручную)' : id % 2 ? 'Instagram → WhatsApp' : 'Онлайн-запись', createdAt: Date.now() - 86400000 };
+  };
+  return [
+    mk(1, 'Айгуль и Тимур', '77015550101', 'shabyt', 2, 11 * 60, 'thai', 'medium', 'paid', { h: 'h1', m: ['mali', 'noy'] }, 'Годовщина свадьбы, подготовить лепестки'),
+    mk(2, 'Дмитрий К.', '77052223344', 'thai', 1, 13 * 60, 'thai', 'deep', 'paid', { m: ['mali'] }, 'Спортсмен, акцент на ноги', 90),
+    mk(3, 'Мадина С.', '77478889900', 'janaru', 1, 13 * 60 + 20, 'local', 'soft', 'massage', { h: 'h1', m: ['aigerim'] }, 'Аллергия на цитрусовые масла'),
+    mk(4, 'Сауле Б.', '77017776655', 'tynys', 1, 14 * 60, 'thai', 'medium', 'massage', { h: 'h2', m: ['noy'] }),
+    mk(5, 'Ержан Н.', '77089991122', 'tynys', 1, 14 * 60 + 5, 'thai', 'deep', 'hammam', { h: 'h1', m: ['mali'] }, 'Записан администратором вручную из WhatsApp'),
+    mk(6, 'Алия и Нурлан', '77761234567', 'deep', 2, 17 * 60, 'thai', 'soft', 'wait', { h: 'h2', m: ['mali', 'noy'] }, 'Первый визит'),
+    mk(7, 'Камила Р.', '77025554433', 'bali', 1, 19 * 60 + 30, 'local', 'soft', 'wait', { m: ['aigerim'] }, '', 60),
+    mk(8, 'Асель и Данияр', '77713332211', 'moroccan', 2, 20 * 60, 'thai', 'medium', 'wait', { h: 'h1', m: ['mali', 'noy'] }, 'Сертификат HN-GIFT-7731'),
+  ];
+}
+function seedClients(date) {
+  const ago = n => addDays(date, -n);
+  const c = (phone, name, notes, history) => [phone, { phone, name, notes, history: history.map(([d, svc, amount]) => ({ date: ago(d), svc, amount })) }];
+  return Object.fromEntries([
+    c('77015550101', 'Айгуль и Тимур', 'Любят мастера Мали. Предпочитают жасминовый чай.', [[34, 'tynys', 35000], [96, 'deep', 72000]]),
+    c('77052223344', 'Дмитрий К.', 'Только глубокая проработка. Не любит разговоры во время массажа.', [[7, 'thai', 22000], [21, 'thai', 22000], [42, 'sport', 22000], [70, 'thai', 22000]]),
+    c('77478889900', 'Мадина С.', '⚠️ Аллергия на цитрусовые масла. Мягкий массаж.', [[60, 'intro', 21000]]),
+    c('77017776655', 'Сауле Б.', 'Приходит с подругой раз в месяц.', [[28, 'tynys', 20900], [58, 'shabyt', 24900]]),
+    c('77089991122', 'Ержан Н.', 'Часто опаздывает на 10–15 минут — ставить буфер.', []),
+    c('77761234567', 'Алия и Нурлан', 'Пришли по рекомендации из Instagram.', []),
+    c('77025554433', 'Камила Р.', 'Беременность 2-й триместр — только мягкие техники!', [[14, 'classic', 15000], [45, 'classic', 15000]]),
+    c('77713332211', 'Асель и Данияр', 'Оплата сертификатом.', [[120, 'intro', 38000]]),
+    c('77002228899', 'Гульнара Т.', 'VIP-гость, пишет в WhatsApp заранее.', [[3, 'moroccan', 48000], [33, 'deep', 38000], [63, 'janaru', 27900], [93, 'deep', 38000], [150, 'moroccan', 48000]]),
+  ]);
+}
+const STORE_KEY = 'hinoki-spa-v1';
+function loadState() {
+  const today = todayKey();
+  const saved = store.get(STORE_KEY);
+  if (!saved) return { bookings: seedBookings(today), clients: seedClients(today), seedDate: today };
+  if (saved.seedDate !== today) {
+    // демо-записи переносятся на сегодня, записи пользователя сохраняются
+    return { ...saved, bookings: [...seedBookings(today), ...saved.bookings.filter(b => !b.seed)], seedDate: today };
+  }
+  return saved;
+}
+
+/* ================= ИКОНКИ / ДЕКОР ================= */
+const Leaf = ({ size = 34, color = '#5C6B57' }) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden="true">
+    <circle cx="20" cy="20" r="19" stroke={color} strokeWidth="1.2" />
+    <path d="M20 31V12M20 16l-5-4M20 16l5-4M20 22l-7-5M20 22l7-5M20 28l-8-5M20 28l8-5" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+);
+const HeroArt = () => (
+  <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="st" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stopColor="#fff" stopOpacity=".0" /><stop offset=".5" stopColor="#fff" stopOpacity=".35" /><stop offset="1" stopColor="#fff" stopOpacity="0" /></linearGradient>
+    </defs>
+    {Array.from({ length: 22 }).map((_, i) => (
+      <path key={i} d={`M${-20 + i * 22} 500 C ${10 + i * 22} ${380 - (i % 4) * 14}, ${-30 + i * 22} ${210 + (i % 3) * 20}, ${8 + i * 22} 0`} stroke="#6B5236" strokeOpacity={0.12 + (i % 3) * 0.05} strokeWidth={1 + (i % 2)} fill="none" />
+    ))}
+    <circle cx="300" cy="120" r="70" fill="#F7F4EF" fillOpacity=".9" />
+    <circle cx="300" cy="120" r="70" fill="none" stroke="#C5A880" strokeWidth="1" />
+    {[0, 1, 2].map(i => <path key={i} d={`M${170 + i * 34} 330 c -16 -30 16 -50 0 -80 c -16 -30 16 -50 0 -80`} stroke="url(#st)" strokeWidth="5" fill="none" strokeLinecap="round" />)}
+    <path d="M110 330 h180 a10 10 0 0 1 10 10 v8 a70 30 0 0 1 -200 0 v-8 a10 10 0 0 1 10 -10z" fill="#2C2520" fillOpacity=".85" />
+    <path d="M140 300 q60 -18 120 0" stroke="#F1E7D7" strokeOpacity=".5" strokeWidth="2" fill="none" />
+    <g transform="translate(40 60)" stroke="#5C6B57" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity=".75">
+      <path d="M0 160 C 40 120 70 80 120 20" />
+      {[0, 1, 2, 3, 4, 5].map(i => <g key={i} transform={`translate(${18 + i * 17} ${135 - i * 22}) rotate(${-40})`}><path d="M0 0 l-14 -8 M0 0 l12 -12" /></g>)}
+    </g>
+  </svg>
+);
+
+/* ================= ОБЩИЕ КОМПОНЕНТЫ ================= */
+function Flow({ svc, dur }) {
+  const ph = phasesOf(svc, dur || 60); const total = ph.slice(-1)[0][2];
+  return <div className="flow">{ph.map(([k, f, t], i) => <span key={i} title={PHASE[k].ru} style={{ width: ((t - f) / total * 100) + '%', background: PHASE[k].c }} />)}</div>;
+}
+
+function ServiceCard({ s, lang, t, onBook, filter }) {
+  const [open, setOpen] = useState(false);
+  const isProg = s.cat === 'program';
+  return (
+    <article className="sv">
+      <div className="meta">
+        {isProg ? <span className="pill olive">⏱ {s.dur} {t.min}</span> : <span className="pill olive">⏱ 60 / 90 {t.min}</span>}
+        {isProg && <span className="pill">{t.f_prog}</span>}
+        {!isProg && <span className="pill">{t.f_mass}</span>}
+        {s.promo && <span className="pill red">{t.promo}</span>}
+      </div>
+      <h3>{s.name[lang]}</h3>
+      <p style={{ margin: 0, color: 'var(--wood-2)', fontSize: 14 }}>{s.d[lang]}</p>
+      {isProg && <Flow svc={s} />}
+      <ul className="steps">
+        {s.steps.map(st => <li key={st}><i>{STEP[st].i}</i>{STEP[st][lang]}</li>)}
+      </ul>
+      {isProg && <button className="more" onClick={() => setOpen(!open)}>{open ? t.hide : t.details} {open ? '↑' : '↓'}</button>}
+      {open && isProg && (
+        <div className="phase-list">
+          {s.phases.map(([k, f, to], i) => <div key={i}><span><span className="st-dot" style={{ background: PHASE[k].c }} />{PHASE[k][lang]}</span><b>{to - f} {t.min}</b></div>)}
+        </div>
+      )}
+      <div className="prices">
+        {isProg ? <>
+          <div style={{ opacity: filter === 'two' ? .5 : 1 }}><small>{t.for1}</small><b>{money(s.p1)}</b></div>
+          <div><small>{t.for2}</small><b>{money(s.p2)}</b>{s.old2 && <s>{money(s.old2)}</s>}</div>
+        </> : <>
+          <div><small>60 {t.min}</small><b>{money(s.prices[60])}</b></div>
+          <div><small>90 {t.min}</small><b>{money(s.prices[90])}</b></div>
+        </>}
+      </div>
+      <button className="btn olive sm" onClick={() => onBook(s.id, filter === 'two' ? 2 : null)}>{t.choose} →</button>
+    </article>
+  );
+}
+
+/* ================= ВИДЖЕТ ЗАПИСИ ================= */
+const EMPTY_FORM = { guests: 1, svcId: 'tynys', dur: 60, date: null, time: null, pref: 'thai', intensity: 'medium', comment: '', name: '', phone: '' };
+
+function BookingWidget({ lang, t, bookings, onCreate, preset, onGoCrm }) {
+  const [step, setStep] = useState(1);
+  const [f, setF] = useState({ ...EMPTY_FORM, date: todayKey() });
+  const [done, setDone] = useState(null);
+  const [err, setErr] = useState('');
+  const set = patch => { setErr(''); setF(p => ({ ...p, ...patch })); };
+
+  useEffect(() => {
+    if (preset) { setDone(null); setStep(1); setF(p => ({ ...p, svcId: preset.svcId, guests: preset.guests || p.guests, time: null })); }
+  }, [preset]);
+
+  const svc = SVC[f.svcId];
+  const days = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(todayKey(), i)), []);
+  const slots = useMemo(() => slotsFor(f, bookings, f.date), [f.svcId, f.dur, f.guests, f.pref, f.date, bookings]);
+  const freeCount = slots.filter(s => s.state === 'free').length;
+  // если выбранный слот стал недоступен — сбрасываем
+  useEffect(() => { if (f.time != null && !slots.find(s => s.m === f.time && s.state === 'free')) set({ time: null }); }, [slots]);
+
+  const price = priceOf(svc, f.dur, f.guests);
+  const total = phasesOf(svc, f.dur).slice(-1)[0][2];
+  const valid = { 1: !!svc, 2: f.time != null, 3: true, 4: f.name.trim().length > 1 && phoneDigits(f.phone).length === 11 };
+
+  const submit = () => {
+    if (f.name.trim().length < 2) return setErr(t.name_err);
+    if (phoneDigits(f.phone).length !== 11) return setErr(t.phone_err);
+    const segs = allocate({ ...f, start: f.time }, bookings, f.date);
+    if (!segs) { setStep(2); set({ time: null }); return setErr(t.slot_taken); }
+    const b = { id: 'b' + Date.now().toString(36) + uid(), date: f.date, name: f.name.trim(), phone: phoneDigits(f.phone), svc: f.svcId, dur: f.dur, guests: f.guests, start: f.time, pref: f.pref, intensity: f.intensity, comment: f.comment.trim(), status: 'wait', segs, price, source: 'Онлайн-запись (сайт)', createdAt: Date.now(), fresh: true };
+    onCreate(b);
+    setDone(b);
+  };
+
+  const masterNames = b => [...new Set(b.segs.filter(s => s.kind === 'massage').map(s => RESOURCES.find(r => r.id === s.res).name.replace('Мастер ', '')))].join(', ');
+  const waText = b => [
+    lang === 'kz' ? 'Сәлеметсіз бе! Hinoki SPA сайты арқылы жазылдым.' : 'Здравствуйте! Я записался(-ась) в Hinoki SPA через сайт.',
+    `${t.booking_no}: ${bookingCode(b.id)}`,
+    `${t.service}: ${svcName(b.svc, lang)}${SVC[b.svc].cat === 'massage' ? ` (${b.dur} ${t.min})` : ''}`,
+    `${t.date}: ${dateLabel(b.date, lang)}, ${fmt(b.start)}`,
+    `${t.guests}: ${b.guests}`,
+    `${t.master}: ${PREFS[b.pref][lang]} (${masterNames(b)})`,
+    `${t.intensity}: ${INTENS[b.intensity][lang]}`,
+    b.comment ? `${t.health}: ${b.comment}` : null,
+    `${t.name}: ${b.name}, ${phoneFmt(b.phone)}`,
+    `${t.total}: ${money(b.price)}`,
+  ].filter(Boolean).join('\n');
+
+  const reset = () => { setDone(null); setStep(1); setF({ ...EMPTY_FORM, date: todayKey() }); };
+  const dayLbl = (k, i) => i === 0 ? t.today : i === 1 ? t.tomorrow : DOW[lang][dateObj(k).getDay()];
+  const filteredSvcs = SERVICES;
+
+  return (
+    <div className="bk">
+      <div className="panel">
+        {done ? (
+          <div className="success">
+            <div className="ok">✓</div>
+            <h3>{t.done_title}</h3>
+            <p style={{ color: 'var(--wood-2)', maxWidth: 440, margin: '10px auto 18px' }}>{t.done_text}</p>
+            <p>{t.booking_no}: <span className="code">{bookingCode(done.id)}</span></p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 380, margin: '20px auto 0' }}>
+              <a className="btn wa" href={waLink(waText(done))} target="_blank" rel="noopener">💬 {t.send_wa}</a>
+              <button className="btn ghost" onClick={onGoCrm}>Посмотреть бронь в CRM →</button>
+              <button className="btn ghost" onClick={reset}>{t.new_booking}</button>
+            </div>
+          </div>
+        ) : <>
+          <div className="stepper">
+            {[t.s1, t.s2, t.s3, t.s4].map((s, i) => <div key={i} className={step >= i + 1 ? 'on' : ''}><div className="bar" /><small>{i + 1}. {s}</small></div>)}
+          </div>
+
+          {step === 1 && <div>
+            <span className="lbl">{t.format}</span>
+            <div className="opt-grid">
+              <button className={'opt' + (f.guests === 1 ? ' on' : '')} onClick={() => set({ guests: 1, time: null })}><b>🧘 {t.for1}</b><small>1 {lang === 'kz' ? 'қонақ' : 'гость'}</small></button>
+              <button className={'opt' + (f.guests === 2 ? ' on' : '')} onClick={() => set({ guests: 2, time: null })}><b>👫 {t.for2}</b><small>{lang === 'kz' ? 'Жұпқа арналған баға' : 'Специальная цена для пары'}</small></button>
+            </div>
+            <span className="lbl">{t.service}</span>
+            <div className="opt-grid">
+              {filteredSvcs.map(s => (
+                <button key={s.id} className={'opt' + (f.svcId === s.id ? ' on' : '')} onClick={() => set({ svcId: s.id, time: null })}>
+                  <b>{s.name[lang]}</b>
+                  <small>{s.cat === 'program' ? `${s.dur} ${t.min} · ${money(f.guests === 2 ? s.p2 : s.p1)}` : `60/90 ${t.min} · ${lang === 'kz' ? 'бастап' : 'от'} ${money(s.prices[60] * f.guests)}`}</small>
+                </button>
+              ))}
+            </div>
+            {svc.cat === 'massage' && <>
+              <span className="lbl">{t.duration}</span>
+              <div className="opt-grid">
+                {[60, 90].map(d => <button key={d} className={'opt' + (f.dur === d ? ' on' : '')} onClick={() => set({ dur: d, time: null })}><b>{d} {t.min}</b><small>{money(svc.prices[d] * f.guests)}</small></button>)}
+              </div>
+            </>}
+          </div>}
+
+          {step === 2 && <div>
+            <span className="lbl">{t.date}</span>
+            <div className="days">
+              {days.map((k, i) => <button key={k} className={'day' + (f.date === k ? ' on' : '')} onClick={() => set({ date: k, time: null })}><small>{dayLbl(k, i)}</small><b>{dateObj(k).getDate()}</b></button>)}
+            </div>
+            <span className="lbl">{t.time} · {dateLabel(f.date, lang)} · <span style={{ color: 'var(--olive)' }}>{t.free}: {freeCount}</span></span>
+            <div className="slots">
+              {slots.map(s => <button key={s.m} className={'slot' + (f.time === s.m ? ' on' : '')} disabled={s.state !== 'free'} title={s.state === 'late' ? t.soon_close : s.state === 'busy' ? t.busy : ''} onClick={() => set({ time: s.m })}>{fmt(s.m)}</button>)}
+            </div>
+            {freeCount === 0 && <p className="err">{t.no_slots}</p>}
+            <div className="legend"><span><i /> {t.free}</span><span><i style={{ background: 'repeating-linear-gradient(135deg,#EFE9DF,#EFE9DF 3px,#F7F4EF 3px,#F7F4EF 6px)' }} /> {t.busy}</span><span><i style={{ background: 'var(--olive)', borderColor: 'var(--olive)' }} /> {t.chosen}</span></div>
+          </div>}
+
+          {step === 3 && <div>
+            <span className="lbl">{t.master}</span>
+            <div className="opt-grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))' }}>
+              {Object.entries(PREFS).map(([k, p]) => <button key={k} className={'opt' + (f.pref === k ? ' on' : '')} onClick={() => set({ pref: k, time: f.time })}><b>{p[lang]}</b><small>{p.s[lang]}</small></button>)}
+            </div>
+            {f.time != null && !allocate({ ...f, start: f.time }, bookings, f.date) && <p className="err">{lang === 'kz' ? 'Бұл уақытта таңдалған шебер бос емес — басқа шеберді немесе уақытты таңдаңыз.' : 'На это время выбранный мастер занят — выберите другого мастера или вернитесь к выбору времени.'}</p>}
+            <span className="lbl">{t.intensity}</span>
+            <div className="opt-grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))' }}>
+              {Object.entries(INTENS).map(([k, p]) => <button key={k} className={'opt' + (f.intensity === k ? ' on' : '')} onClick={() => set({ intensity: k })}><b>{k === 'soft' ? '🌸' : k === 'medium' ? '🌿' : '🪵'} {p[lang]}</b></button>)}
+            </div>
+            <span className="lbl">{t.health}</span>
+            <textarea className="inp" value={f.comment} onChange={e => set({ comment: e.target.value })} placeholder={t.health_ph} maxLength={400} />
+          </div>}
+
+          {step === 4 && <div>
+            <div className="row2">
+              <div><span className="lbl">{t.name}</span><input className="inp" value={f.name} onChange={e => set({ name: e.target.value })} placeholder={t.name_ph} autoComplete="name" /></div>
+              <div><span className="lbl">{t.phone}</span><input className="inp" value={f.phone} onChange={e => set({ phone: phoneFmt(e.target.value) })} placeholder="+7 (7__) ___-__-__" inputMode="tel" autoComplete="tel" /></div>
+            </div>
+            <div className="note">🔒 <span>{lang === 'kz' ? 'Нөміріңіз тек растау және еске салу үшін қолданылады.' : 'Номер нужен только для подтверждения и напоминания о визите.'}</span></div>
+          </div>}
+
+          {err && <p className="err">{err}</p>}
+          <div className="nav-btns">
+            {step > 1 ? <button className="btn ghost" onClick={() => setStep(step - 1)}>← {t.back}</button> : <span />}
+            {step < 4 && <button className="btn olive" disabled={!valid[step] || (step === 3 && !allocate({ ...f, start: f.time }, bookings, f.date))} onClick={() => setStep(step + 1)}>{t.next} →</button>}
+            {step === 4 && <button className="btn gold" disabled={!valid[4]} onClick={submit}>{t.confirm}</button>}
+          </div>
+        </>}
+      </div>
+
+      <aside className="panel summary">
+        <h3>{t.summary}</h3>
+        <div className="sum-row"><span>{t.service}</span><b>{svc.name[lang]}</b></div>
+        <div className="sum-row"><span>{t.duration}</span><b>{total} {t.min}</b></div>
+        <div className="sum-row"><span>{t.guests}</span><b>{f.guests}</b></div>
+        <div className="sum-row"><span>{t.date}</span><b>{f.time != null ? `${dateLabel(f.date, lang)}, ${fmt(f.time)}–${fmt(f.time + total)}` : t.not_chosen}</b></div>
+        {step >= 3 && <div className="sum-row"><span>{t.master}</span><b>{PREFS[f.pref][lang]}</b></div>}
+        {step >= 3 && <div className="sum-row"><span>{t.intensity}</span><b>{INTENS[f.intensity][lang]}</b></div>}
+        <div style={{ marginTop: 14 }}><Flow svc={svc} dur={f.dur} /></div>
+        <div className="sum-total"><span>{t.total}</span><b>{money(price)}</b></div>
+        <div className="note">💳 <span>{t.pay_note}</span></div>
+      </aside>
+    </div>
+  );
+}
+
+/* ================= СЕРТИФИКАТ ================= */
+function GiftBuilder({ lang, t }) {
+  const [g, setG] = useState({ type: 'amount', amount: 30000, custom: '', program: 'deep', guests: 2, to: '', from: '', msg: '', theme: 'wood' });
+  const set = p => setG(x => ({ ...x, ...p }));
+  const code = useMemo(() => 'HN-GIFT-' + Math.floor(1000 + Math.random() * 9000), []);
+  const prog = SVC[g.program];
+  const value = g.type === 'amount' ? (Number(g.custom) || g.amount) : priceOf(prog, 60, g.guests);
+  const valueLabel = g.type === 'amount' ? money(value) : prog.name[lang];
+  const text = [
+    lang === 'kz' ? 'Сәлеметсіз бе! Сыйлық сертификатын рәсімдегім келеді.' : 'Здравствуйте! Хочу оформить подарочный сертификат Hinoki SPA.',
+    g.type === 'amount' ? `${t.g_amount}: ${money(value)}` : `${t.g_program}: ${prog.name[lang]} (${g.guests === 2 ? t.for2 : t.for1}) — ${money(value)}`,
+    g.to && `${t.g_to}: ${g.to}`, g.from && `${t.g_from}: ${g.from}`, g.msg && `${t.g_msg}: ${g.msg}`,
+    `${t.g_theme}: ${g.theme}`, `Код: ${code}`,
+  ].filter(Boolean).join('\n');
+  const themes = { wood: 'linear-gradient(135deg,#3A2F28,#1F1916)', sage: 'linear-gradient(135deg,#6C7B66,#46523F)', sand: 'linear-gradient(135deg,#F7F0E4,#EADCC4)' };
+  return (
+    <div className="gift">
+      <div className="panel">
+        <div className="seg" style={{ marginBottom: 6 }}>
+          <button className={g.type === 'amount' ? 'on' : ''} onClick={() => set({ type: 'amount' })}>{t.g_amount}</button>
+          <button className={g.type === 'program' ? 'on' : ''} onClick={() => set({ type: 'program' })}>{t.g_program}</button>
+        </div>
+        {g.type === 'amount' ? <>
+          <span className="lbl">{t.g_amount}</span>
+          <div className="chips">
+            {[15000, 25000, 30000, 50000, 75000, 100000].map(a => <button key={a} className={'chip' + (!g.custom && g.amount === a ? ' on' : '')} onClick={() => set({ amount: a, custom: '' })}>{money(a)}</button>)}
+          </div>
+          <span className="lbl">{t.g_custom}</span>
+          <input className="inp" inputMode="numeric" placeholder="40 000" value={g.custom} onChange={e => set({ custom: e.target.value.replace(/\D/g, '').slice(0, 7) })} />
+        </> : <>
+          <span className="lbl">{t.g_program}</span>
+          <select className="inp" value={g.program} onChange={e => set({ program: e.target.value })}>
+            {SERVICES.filter(s => s.cat === 'program').map(s => <option key={s.id} value={s.id}>{s.name[lang]} · {s.dur} {t.min}</option>)}
+          </select>
+          <span className="lbl">{t.format}</span>
+          <div className="opt-grid">
+            <button className={'opt' + (g.guests === 1 ? ' on' : '')} onClick={() => set({ guests: 1 })}><b>{t.for1}</b><small>{money(prog.p1)}</small></button>
+            <button className={'opt' + (g.guests === 2 ? ' on' : '')} onClick={() => set({ guests: 2 })}><b>{t.for2}</b><small>{money(prog.p2)}</small></button>
+          </div>
+        </>}
+        <div className="row2">
+          <div><span className="lbl">{t.g_to}</span><input className="inp" value={g.to} maxLength={30} onChange={e => set({ to: e.target.value })} placeholder={t.g_to_ph} /></div>
+          <div><span className="lbl">{t.g_from}</span><input className="inp" value={g.from} maxLength={30} onChange={e => set({ from: e.target.value })} placeholder={t.g_from_ph} /></div>
+        </div>
+        <span className="lbl">{t.g_msg}</span>
+        <input className="inp" value={g.msg} maxLength={70} onChange={e => set({ msg: e.target.value })} placeholder={t.g_msg_ph} />
+        <span className="lbl">{t.g_theme}</span>
+        <div className="themes">{Object.entries(themes).map(([k, bg]) => <button key={k} aria-label={k} className={g.theme === k ? 'on' : ''} style={{ background: bg }} onClick={() => set({ theme: k })} />)}</div>
+      </div>
+      <div style={{ position: 'sticky', top: 84 }}>
+        <div className={'cert t-' + g.theme}>
+          <svg className="bgart" viewBox="0 0 40 40"><path d="M20 38V6M20 12l-8-6M20 12l8-6M20 20l-11-8M20 20l11-8M20 29l-13-8M20 29l13-8" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" /></svg>
+          <div className="c-top"><div><b>HINOKI</b><small>SPA · Astana</small></div><small style={{ textAlign: 'right' }}>{t.g_cert}<br />{code}</small></div>
+          <div className="c-val"><small>{g.to ? `${t.g_for} ${g.to}` : t.g_cert}</small>{valueLabel}{g.type === 'program' && <div style={{ fontFamily: 'var(--sans)', fontSize: 13, opacity: .8, marginTop: 6 }}>{g.guests === 2 ? t.for2 : t.for1} · {prog.dur} {t.min}</div>}</div>
+          <div className="c-bot"><div className="c-msg">{g.msg || t.g_msg_ph}{g.from && <div style={{ fontFamily: 'var(--sans)', fontStyle: 'normal', fontSize: 12, marginTop: 4 }}>— {g.from}</div>}</div><div style={{ textAlign: 'right', opacity: .75, fontSize: 11 }}>{t.g_valid}</div></div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0 10px', gap: 10 }}>
+          <span style={{ color: 'var(--muted)' }}>{t.total}</span><b style={{ fontFamily: 'var(--serif)', fontSize: 30 }}>{money(value)}</b>
+        </div>
+        <a className="btn wa" style={{ width: '100%' }} href={waLink(text)} target="_blank" rel="noopener">🎁 {t.g_order}</a>
+      </div>
+    </div>
+  );
+}
+
+/* ================= САЙТ ДЛЯ КЛИЕНТОВ ================= */
+function ClientSite({ lang, t, bookings, onCreate, onGoCrm }) {
+  const [filter, setFilter] = useState('all');
+  const [preset, setPreset] = useState(null);
+  const list = SERVICES.filter(s => filter === 'all' || (filter === 'two' && s.cat === 'program') || (filter === 'prog' && s.cat === 'program') || (filter === 'mass' && s.cat === 'massage'));
+  const book = (svcId, guests) => { setPreset({ svcId, guests, n: Date.now() }); document.getElementById('book').scrollIntoView({ behavior: 'smooth' }); };
+  const mapQ = encodeURIComponent('Астана, проспект Бауыржана Момышулы, 2А');
+  return <>
+    <section className="hero">
+      <div className="wrap">
+        <div>
+          <div className="eyebrow">{t.hero_eyebrow} · @hinoki.spa</div>
+          <h1>{t.hero_title_1} <em>{t.hero_title_2}</em></h1>
+          <p className="lead">{t.hero_lead}</p>
+          <div className="rating"><span className="g">2ГИС</span><b>4.9</b><span className="stars">★★★★★</span><span style={{ color: 'var(--muted)', fontSize: 13 }}>250+ {t.reviews}</span></div>
+          <div className="hero-cta">
+            <a className="btn gold" href="#book">{t.book_online}</a>
+            <a className="btn ghost" href="#services">{t.see_menu}</a>
+          </div>
+          <div className="hero-facts">
+            <div><b>11:00–00:00</b>{t.fact_hours}</div>
+            <div><b>90</b>{t.fact_park}</div>
+            <div><b>2</b>{t.fact_masters}</div>
+          </div>
+        </div>
+        <div className="art"><HeroArt />
+          <div className="tag"><div className="ic">♨️</div><div><b style={{ fontSize: 14 }}>Hinoki Deep Relax</b><div style={{ fontSize: 12.5, color: 'var(--muted)' }}>150 {t.min} · {lang === 'kz' ? 'хаммам, орау, массаж, шай' : 'хаммам, обёртывание, массаж, чай'}</div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section className="s" id="services">
+      <div className="wrap">
+        <div className="s-head">
+          <div><h2>{t.services_title}</h2><p>{t.services_sub}</p></div>
+          <div className="chips">
+            {[['all', t.f_all], ['two', t.f_two], ['prog', t.f_prog], ['mass', t.f_mass]].map(([k, l]) => <button key={k} className={'chip' + (filter === k ? ' on' : '')} onClick={() => setFilter(k)}>{l}</button>)}
+          </div>
+        </div>
+        <div className="grid-sv">{list.map(s => <ServiceCard key={s.id} s={s} lang={lang} t={t} onBook={book} filter={filter} />)}</div>
+      </div>
+    </section>
+
+    <section className="s" id="book" style={{ background: 'var(--bg2)' }}>
+      <div className="wrap">
+        <div className="s-head"><div><h2>{t.book_title}</h2><p>{t.book_sub}</p></div></div>
+        <BookingWidget lang={lang} t={t} bookings={bookings} onCreate={onCreate} preset={preset} onGoCrm={onGoCrm} />
+      </div>
+    </section>
+
+    <section className="s" id="gift">
+      <div className="wrap">
+        <div className="s-head"><div><h2>{t.gift_title}</h2><p>{t.gift_sub}</p></div></div>
+        <GiftBuilder lang={lang} t={t} />
+      </div>
+    </section>
+
+    <section className="s" id="contacts" style={{ paddingTop: 20 }}>
+      <div className="wrap">
+        <div className="s-head"><div><h2>{t.contacts_title}</h2></div></div>
+        <div className="contacts">
+          <div className="c-list">
+            <div className="c-item"><div className="ic">📍</div><div><b>{ADDRESS[lang]}</b><span>Hinoki SPA</span></div></div>
+            <div className="c-item"><div className="ic">🕚</div><div><b>{t.hours}</b><span>{lang === 'kz' ? 'Соңғы жазылу — 22:30' : 'Последняя запись — 22:30'}</span></div></div>
+            <div className="c-item"><div className="ic">🅿️</div><div><b>{t.parking}</b><span>{lang === 'kz' ? 'Кіреберістің жанында' : 'Прямо у входа'}</span></div></div>
+            <div className="c-item"><div className="ic">💳</div><div><b>{t.pay}</b><span>{t.pay_list}</span></div></div>
+            <div className="c-item"><div className="ic">📞</div><div><b><a href={'tel:+' + WA_PHONE} style={{ textDecoration: 'none' }}>{PHONE_VIEW}</a></b><span>WhatsApp · Instagram <a href="https://instagram.com/hinoki.spa" target="_blank" rel="noopener">@hinoki.spa</a></span></div></div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <a className="btn olive" href={`https://2gis.kz/astana/search/${encodeURIComponent('Hinoki SPA')}`} target="_blank" rel="noopener">🗺 {t.route_2gis}</a>
+              <a className="btn wa" href={waLink(lang === 'kz' ? 'Сәлеметсіз бе! Сұрағым бар.' : 'Здравствуйте! Хочу уточнить запись в Hinoki SPA.')} target="_blank" rel="noopener">💬 {t.write_wa}</a>
+            </div>
+          </div>
+          <div className="map"><iframe title="map" loading="lazy" src={`https://yandex.ru/map-widget/v1/?text=${mapQ}&z=16`} allowFullScreen /></div>
+        </div>
+      </div>
+    </section>
+    <footer><div className="wrap"><span>{t.footer}</span><span>{PHONE_VIEW} · @hinoki.spa</span></div></footer>
+    <div className="fab"><a className="btn gold" href="#book">{t.book_online}</a></div>
+  </>;
+}
+
+/* ================= CRM ================= */
+const PX = 1.4; // пикселей на минуту
+function Timeline({ bookings, date, onOpen, conflicts }) {
+  const [hl, setHl] = useState(null);
+  const list = bookings.filter(b => b.date === date);
+  const H = (CLOSE - OPEN) * PX;
+  const isToday = date === todayKey();
+  const [nm, setNm] = useState(nowMin());
+  useEffect(() => { const i = setInterval(() => setNm(nowMin()), 30000); return () => clearInterval(i); }, []);
+  const scrollRef = useRef();
+  useEffect(() => { if (isToday && scrollRef.current) scrollRef.current.scrollTop = Math.max(0, (nm - OPEN - 60) * PX); }, [date]);
+
+  const load = r => { const mins = activeOn(bookings, date).flatMap(b => b.segs).filter(s => s.res === r).reduce((a, s) => a + s.to - s.from, 0); return Math.round(mins / (CLOSE - OPEN) * 100); };
+
+  const cols = RESOURCES.map(r => {
+    const segs = list.flatMap(b => b.segs.filter(s => s.res === r.id).map(s => ({ ...s, b }))).sort((a, b) => a.from - b.from);
+    const lanesEnd = []; segs.forEach(s => { let l = lanesEnd.findIndex(e => e <= s.from); if (l < 0) { l = lanesEnd.length; lanesEnd.push(0); } lanesEnd[l] = s.to; s.lane = l; });
+    return { r, segs, lanes: Math.max(1, lanesEnd.length) };
+  });
+  const colW = c => c.r.kind === 'tea' ? 200 : 168;
+
+  return (
+    <div className="tl-wrap">
+      <div className="tl-scroll" ref={scrollRef}>
+        <div className="tl" style={{ gridTemplateColumns: `52px ${cols.map(c => colW(c) + 'px').join(' ')}`, gridTemplateRows: `auto ${H + 16}px` }}>
+          <div className="tl-head tl-corner" />
+          {cols.map(c => <div key={c.r.id} className="tl-head">{c.r.name}<small>{c.r.sub}{c.r.kind !== 'tea' && ` · ${load(c.r.id)}%`}</small>{c.r.kind !== 'tea' && <div className="ld"><i style={{ width: load(c.r.id) + '%' }} /></div>}</div>)}
+          <div className="tl-hours">
+            {Array.from({ length: 14 }, (_, i) => <div key={i} style={{ top: i * 60 * PX + 8 }}>{fmt(OPEN + i * 60)}</div>)}
+          </div>
+          {cols.map(c => (
+            <div key={c.r.id} className={'tl-col' + (c.r.kind === 'tea' ? ' tea' : '')} style={{ paddingTop: 8 }}>
+              {Array.from({ length: 26 }, (_, i) => <div key={i} className={'tl-line' + (i % 2 ? ' half' : '')} style={{ top: i * 30 * PX + 8 }} />)}
+              {isToday && nm >= OPEN && nm <= CLOSE && <div className="now" style={{ top: (nm - OPEN) * PX + 8 }} />}
+              {c.segs.map((s, i) => {
+                const b = s.b; const w = 100 / c.lanes; const h = (s.to - s.from) * PX - 2;
+                return (
+                  <button key={b.id + i} className={`ev k-${s.kind} st-${b.status}${hl === b.id ? ' hl' : ''}${conflicts.has(b.id) && c.r.kind !== 'tea' ? ' conflict' : ''}${b.fresh ? ' fresh' : ''}`}
+                    style={{ top: (s.from - OPEN) * PX + 9, height: h, left: `calc(${s.lane * w}% + 3px)`, width: `calc(${w}% - 6px)` }}
+                    onMouseEnter={() => setHl(b.id)} onMouseLeave={() => setHl(null)} onClick={() => onOpen(b.id)}
+                    title={`${b.name} · ${svcName(b.svc)} · ${fmt(s.from)}–${fmt(s.to)}`}>
+                    <span className="t">{fmt(s.from)}–{fmt(s.to)}</span>
+                    <b>{b.fresh && '🆕 '}{b.name}</b>
+                    {h > 44 && <span style={{ opacity: .8 }}>{svcName(b.svc)}{b.guests === 2 ? ' ×2' : ''}</span>}
+                    {h > 30 && <div className="tags">
+                      {s.kind === 'massage' && <span className={'tg ' + b.intensity}>{INTENS[b.intensity].tag}</span>}
+                      {h > 62 && <span className="tg" style={{ color: ST[b.status].c }}>● {ST[b.status].ru}</span>}
+                      {h > 62 && b.comment && s.kind !== 'tea' && <span className="tg" title={b.comment}>⚠︎ заметка</span>}
+                    </div>}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function useEsc(fn) { useEffect(() => { const h = e => e.key === 'Escape' && fn(); addEventListener('keydown', h); return () => removeEventListener('keydown', h); }, [fn]); }
+function BookingDrawer({ b, onClose, onUpdate, onDelete, client }) {
+  useEsc(onClose);
+  if (!b) return null;
+  const svc = SVC[b.svc];
+  return (
+    <div className="ov" onClick={onClose}>
+      <div className="drawer" onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+          <div><div className="eyebrow">{bookingCode(b.id)} · {b.source}</div><h3>{b.name}</h3></div>
+          <button className="x" onClick={onClose}>✕</button>
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+          <span className="pill olive">{svc.name.ru}{svc.cat === 'massage' ? ` · ${b.dur} мин` : ''}</span>
+          <span className="pill">{b.guests === 2 ? '👫 Для двоих' : '🧘 1 гость'}</span>
+          <span className={'pill ' + (b.intensity === 'deep' ? 'red' : b.intensity === 'soft' ? 'blue' : 'amber')}>Массаж: {INTENS[b.intensity].tag}</span>
+          <span className="pill gold">{money(b.price)}</span>
+        </div>
+        <div className="box">
+          <div className="seg-list">
+            <div><span>📅 Дата</span><b>{dateLabel(b.date)}</b></div>
+            {b.segs.map((s, i) => <div key={i}><span><span className="st-dot" style={{ background: PHASE[s.kind].c }} />{PHASE[s.kind].ru} · {RESOURCES.find(r => r.id === s.res).name}</span><b>{fmt(s.from)}–{fmt(s.to)}</b></div>)}
+            <div><span>Мастер (пожелание)</span><b>{PREFS[b.pref].ru}</b></div>
+          </div>
+        </div>
+        {b.comment && <div className="box" style={{ background: 'var(--amber-l)', borderColor: '#EAD4A6' }}><b style={{ fontSize: 13 }}>⚠︎ Здоровье / комментарий</b><div style={{ fontSize: 14, marginTop: 4 }}>{b.comment}</div></div>}
+        {client?.notes && <div className="box"><b style={{ fontSize: 13 }}>Заметка из базы клиентов</b><div style={{ fontSize: 14, marginTop: 4, color: 'var(--wood-2)' }}>{client.notes}</div></div>}
+        <span className="lbl" style={{ marginTop: 18 }}>Статус</span>
+        <div className="st-grid">
+          {STATUSES.map(s => <button key={s.id} className={'st-btn' + (b.status === s.id ? ' on' : '')} onClick={() => onUpdate(b.id, { status: s.id, fresh: false })}><span className="st-dot" style={{ background: s.c }} />{s.ru}</button>)}
+        </div>
+        <span className="lbl">Интенсивность массажа</span>
+        <div className="seg">{Object.entries(INTENS).map(([k, v]) => <button key={k} className={b.intensity === k ? 'on' : ''} onClick={() => onUpdate(b.id, { intensity: k })}>{v.tag}</button>)}</div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 20, flexWrap: 'wrap' }}>
+          <a className="btn wa sm" href={`https://wa.me/${b.phone}?text=${encodeURIComponent(`Здравствуйте, ${b.name}! Это Hinoki SPA. Напоминаем о записи ${dateLabel(b.date)} в ${fmt(b.start)} — ${svcName(b.svc)}. Ждём вас! Бесплатная парковка у входа.`)}`} target="_blank" rel="noopener">💬 Напомнить в WhatsApp</a>
+          <a className="btn ghost sm" href={'tel:+' + b.phone}>📞 {phoneFmt(b.phone)}</a>
+          <button className="btn ghost sm" style={{ color: 'var(--red)' }} onClick={() => { if (confirm('Удалить запись без следа? Для обычной отмены используйте статус «Отмена».')) onDelete(b.id); }}>Удалить</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminNewBooking({ bookings, date, onCreate, onClose }) {
+  const [f, setF] = useState({ ...EMPTY_FORM, date, time: Math.max(OPEN, Math.ceil((date === todayKey() ? nowMin() : OPEN) / 10) * 10), name: '', phone: '' });
+  const [force, setForce] = useState(false);
+  const set = p => setF(x => ({ ...x, ...p }));
+  useEsc(onClose);
+  const svc = SVC[f.svcId];
+  const segs = allocate({ ...f, start: f.time }, bookings, f.date);
+  const forced = !segs && force ? allocate({ ...f, start: f.time }, bookings, f.date, { force: true }) : null;
+  const can = f.name.trim().length > 1 && (segs || forced);
+  const times = []; for (let m = OPEN; m <= 23 * 60; m += 10) times.push(m);
+  const create = () => {
+    const s = segs || forced;
+    onCreate({ id: 'a' + Date.now().toString(36) + uid(), date: f.date, name: f.name.trim(), phone: phoneDigits(f.phone) || '77000000000', svc: f.svcId, dur: f.dur, guests: f.guests, start: f.time, pref: f.pref, intensity: f.intensity, comment: f.comment.trim(), status: 'wait', segs: s, price: priceOf(svc, f.dur, f.guests), source: 'Администратор (WhatsApp/звонок)', createdAt: Date.now(), fresh: true });
+    onClose();
+  };
+  return (
+    <div className="ov" onClick={onClose}>
+      <div className="drawer" onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}><h3>Новая запись</h3><button className="x" onClick={onClose}>✕</button></div>
+        <p style={{ color: 'var(--muted)', fontSize: 13, margin: '4px 0 0' }}>Для заявок из WhatsApp и звонков. Система сама подберёт хаммам и мастеров.</p>
+        <div className="row2"><div><span className="lbl">Имя гостя</span><input className="inp" value={f.name} onChange={e => set({ name: e.target.value })} /></div>
+          <div><span className="lbl">Телефон</span><input className="inp" inputMode="tel" value={f.phone} onChange={e => set({ phone: phoneFmt(e.target.value) })} placeholder="+7" /></div></div>
+        <span className="lbl">Услуга</span>
+        <select className="inp" value={f.svcId} onChange={e => set({ svcId: e.target.value })}>{SERVICES.map(s => <option key={s.id} value={s.id}>{s.name.ru}</option>)}</select>
+        <div className="row2">
+          <div><span className="lbl">Гостей</span><div className="seg">{[1, 2].map(n => <button key={n} className={f.guests === n ? 'on' : ''} onClick={() => set({ guests: n })}>{n === 1 ? '1 гость' : 'Пара'}</button>)}</div></div>
+          {svc.cat === 'massage' && <div><span className="lbl">Длительность</span><div className="seg">{[60, 90].map(n => <button key={n} className={f.dur === n ? 'on' : ''} onClick={() => set({ dur: n })}>{n} мин</button>)}</div></div>}
+        </div>
+        <div className="row2">
+          <div><span className="lbl">Дата</span><input type="date" className="inp" value={f.date} onChange={e => e.target.value && set({ date: e.target.value })} /></div>
+          <div><span className="lbl">Начало</span><select className="inp" value={f.time} onChange={e => set({ time: Number(e.target.value) })}>{times.map(m => <option key={m} value={m}>{fmt(m)}</option>)}</select></div>
+        </div>
+        <span className="lbl">Мастер</span>
+        <div className="seg">{Object.entries(PREFS).map(([k, v]) => <button key={k} className={f.pref === k ? 'on' : ''} onClick={() => set({ pref: k })}>{k === 'thai' ? 'Таиланд' : k === 'local' ? 'Местный' : 'Любой'}</button>)}</div>
+        <span className="lbl">Интенсивность</span>
+        <div className="seg">{Object.entries(INTENS).map(([k, v]) => <button key={k} className={f.intensity === k ? 'on' : ''} onClick={() => set({ intensity: k })}>{v.tag}</button>)}</div>
+        <span className="lbl">Комментарий</span>
+        <textarea className="inp" value={f.comment} onChange={e => set({ comment: e.target.value })} placeholder="Аллергии, пожелания, откуда пришёл" />
+        {segs ? <div className="avail" style={{ background: 'var(--olive-l)', color: 'var(--olive-d)' }}>✓ Свободно: {segs.filter(s => s.kind !== 'tea').map(s => `${RESOURCES.find(r => r.id === s.res).name.replace('Мастер ', '')} ${fmt(s.from)}`).join(' → ')}{segs.some(s => s.kind === 'tea') ? ' → чайная' : ''}</div>
+          : <div className="avail" style={{ background: 'var(--red-l)', color: '#7E3524' }}>✕ На это время нет свободного хаммама, мастера или места в чайной комнате.
+            <label className="check"><input type="checkbox" checked={force} onChange={e => setForce(e.target.checked)} /> Всё равно записать с накладкой (появится алерт в шахматке)</label></div>}
+        <button className="btn olive" style={{ width: '100%', marginTop: 16 }} disabled={!can} onClick={create}>Создать запись</button>
+      </div>
+    </div>
+  );
+}
+
+function Clients({ clients, bookings, onNote, onOpen }) {
+  const [q, setQ] = useState('');
+  const [sort, setSort] = useState('ltv');
+  const rows = useMemo(() => {
+    const map = { ...clients };
+    bookings.forEach(b => { if (!map[b.phone]) map[b.phone] = { phone: b.phone, name: b.name, notes: '', history: [] }; });
+    return Object.values(map).map(c => {
+      const bks = bookings.filter(b => b.phone === c.phone && b.status !== 'cancel');
+      const paidB = bks.filter(b => b.status === 'paid');
+      const visits = [...c.history.map(h => ({ ...h, paid: true })), ...bks.map(b => ({ date: b.date, svc: b.svc, amount: b.price, paid: b.status === 'paid', id: b.id, start: b.start, status: b.status }))].sort((a, b) => b.date.localeCompare(a.date));
+      const ltv = c.history.reduce((a, h) => a + h.amount, 0) + paidB.reduce((a, b) => a + b.price, 0);
+      return { ...c, visits, ltv, count: c.history.length + paidB.length, upcoming: bks.filter(b => b.status !== 'paid' && b.date >= todayKey()).length };
+    }).filter(c => !q || (c.name + c.phone + c.notes).toLowerCase().includes(q.toLowerCase().replace(/\D/g, '') || q.toLowerCase()))
+      .sort((a, b) => sort === 'ltv' ? b.ltv - a.ltv : sort === 'visits' ? b.count - a.count : a.name.localeCompare(b.name));
+  }, [clients, bookings, q, sort]);
+  const total = rows.reduce((a, c) => a + c.ltv, 0);
+  return <>
+    <div className="crm-bar">
+      <input className="inp" style={{ maxWidth: 340 }} placeholder="🔍 Поиск по имени, телефону, заметке" value={q} onChange={e => setQ(e.target.value)} />
+      <div className="seg">{[['ltv', 'По LTV'], ['visits', 'По визитам'], ['name', 'А–Я']].map(([k, l]) => <button key={k} className={sort === k ? 'on' : ''} onClick={() => setSort(k)}>{l}</button>)}</div>
+      <span className="pill gold" style={{ marginLeft: 'auto' }}>{rows.length} гостей · LTV {money(total)}</span>
+    </div>
+    <div className="clients">
+      {rows.map(c => (
+        <div className="cl" key={c.phone}>
+          <div className="cl-h"><div className="ava">{initials(c.name)}</div><div style={{ flex: 1, minWidth: 0 }}><b>{c.name}</b><div style={{ fontSize: 13, color: 'var(--muted)' }}>{phoneFmt(c.phone)}</div></div>
+            {c.ltv >= 100000 && <span className="pill gold">VIP</span>}{c.upcoming > 0 && <span className="pill olive">запись</span>}</div>
+          <div className="cl-stats"><div><small>LTV</small><b>{money(c.ltv)}</b></div><div><small>Визитов</small><b>{c.count}</b></div><div><small>Ср. чек</small><b>{c.count ? money(c.ltv / c.count) : '—'}</b></div></div>
+          <textarea className="inp" style={{ minHeight: 56, fontSize: 13.5 }} placeholder="Заметка: предпочтения, аллергии, любимый мастер…" defaultValue={c.notes} onBlur={e => e.target.value !== c.notes && onNote(c.phone, c.name, e.target.value)} />
+          <div className="hist">
+            {c.visits.slice(0, 4).map((v, i) => <div key={i} style={v.id ? { cursor: 'pointer' } : null} onClick={() => v.id && onOpen(v.id, v.date)}><span>{dateObj(v.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })} · {svcName(v.svc)}{v.id && !v.paid ? <span style={{ color: 'var(--olive)' }}> · {ST[v.status].ru}</span> : ''}</span><b>{money(v.amount)}</b></div>)}
+            {c.visits.length === 0 && <div>Визитов пока нет</div>}
+            {c.visits.length > 4 && <div style={{ color: 'var(--muted)' }}>ещё {c.visits.length - 4}…</div>}
+          </div>
+        </div>
+      ))}
+    </div>
+  </>;
+}
+
+function CRM({ bookings, clients, onUpdate, onDelete, onCreate, onNote, onReset, focus }) {
+  const [tab, setTab] = useState('schedule');
+  const [date, setDate] = useState(todayKey());
+  const [openId, setOpenId] = useState(null);
+  const [adding, setAdding] = useState(false);
+  useEffect(() => { if (focus) { setTab('schedule'); setDate(focus.date); setOpenId(focus.id); } }, [focus]);
+
+  const day = activeOn(bookings, date);
+  const all = bookings.filter(b => b.date === date);
+  const paid = day.filter(b => b.status === 'paid').reduce((a, b) => a + b.price, 0);
+  const expected = day.filter(b => b.status !== 'paid').reduce((a, b) => a + b.price, 0);
+  const guests = day.reduce((a, b) => a + b.guests, 0);
+  const loads = MASTERS.map(m => ({ m, p: Math.round(day.flatMap(b => b.segs).filter(s => s.res === m).reduce((a, s) => a + s.to - s.from, 0) / (CLOSE - OPEN) * 100) }));
+  const avg = Math.round(loads.reduce((a, l) => a + l.p, 0) / loads.length);
+  const windows = slotsFor({ svcId: 'tynys', dur: 60, guests: 1, pref: 'any' }, bookings, date).filter(s => s.state === 'free');
+  const alerts = computeAlerts(bookings, date);
+  const conflicts = conflictIds(bookings, date);
+  const open = bookings.find(b => b.id === openId);
+  const fresh = bookings.filter(b => b.fresh).length;
+
+  return (
+    <div className="crm"><div className="wrap">
+      <div className="crm-bar">
+        <h2>{tab === 'schedule' ? 'Расписание' : 'База клиентов'}</h2>
+        <div className="seg dark"><button className={tab === 'schedule' ? 'on' : ''} onClick={() => setTab('schedule')}>Шахматка</button><button className={tab === 'clients' ? 'on' : ''} onClick={() => setTab('clients')}>Клиенты</button></div>
+        {tab === 'schedule' && <>
+          <div className="datenav"><button onClick={() => setDate(addDays(date, -1))}>‹</button><span>{date === todayKey() ? 'Сегодня, ' : ''}{dateLabel(date)}</span><button onClick={() => setDate(addDays(date, 1))}>›</button></div>
+          {date !== todayKey() && <button className="btn ghost sm" onClick={() => setDate(todayKey())}>Сегодня</button>}
+          <button className="btn olive sm" onClick={() => setAdding(true)}>+ Запись</button>
+        </>}
+      </div>
+
+      {tab === 'schedule' ? <>
+        <div className="kpis">
+          <div className="kpi"><small>Выручка (оплачено)</small><b>{money(paid)}</b><div className="sub">ожидается ещё {money(expected)}</div></div>
+          <div className="kpi"><small>Записей</small><b>{day.length}</b><div className="sub">{guests} гостей · {all.length - day.length} отмен{fresh ? ` · 🆕 ${fresh} новых` : ''}</div></div>
+          <div className="kpi"><small>Загрузка мастеров</small><b>{avg}%</b>
+            <div className="loadbars">{loads.map(l => <div key={l.m}><span>{RESOURCES.find(r => r.id === l.m).name.replace('Мастер ', '')}</span><span className="tr"><i style={{ width: l.p + '%', background: l.p > 70 ? 'var(--red)' : l.p > 45 ? 'var(--gold)' : 'var(--olive)' }} /></span><b>{l.p}%</b></div>)}</div></div>
+          <div className="kpi"><small>Свободные окна</small><b>{windows.length}</b><div className="sub">для программы 2 ч: {windows.slice(0, 5).map(w => fmt(w.m)).join(', ') || 'нет'}{windows.length > 5 ? '…' : ''}</div></div>
+        </div>
+        <div className="alerts">
+          {alerts.length === 0 && <div className="alert ok"><span className="ic">✓</span><span>Узких мест нет: хаммам и чайная комната без пересечений.</span></div>}
+          {alerts.map(a => <div key={a.key} className={'alert ' + a.type} style={a.ids ? { cursor: 'pointer' } : null} onClick={() => a.ids && setOpenId(a.ids[1])}><span className="ic">{a.type === 'red' ? '⚠️' : '☕'}</span>{a.text}</div>)}
+        </div>
+        <Timeline bookings={bookings} date={date} onOpen={setOpenId} conflicts={conflicts} />
+        <div className="legend" style={{ marginTop: 12 }}>
+          {Object.entries(PHASE).map(([k, p]) => <span key={k}><i style={{ background: p.c, borderColor: p.c }} />{p.ru}</span>)}
+          <span><i style={{ borderColor: 'var(--red)', borderWidth: 2 }} />накладка</span>
+          <span style={{ marginLeft: 'auto' }}><button className="more" style={{ color: 'var(--muted)' }} onClick={() => { if (confirm('Сбросить демо-данные? Все созданные записи и заметки удалятся.')) onReset(); }}>Сбросить демо-данные</button></span>
+        </div>
+      </> : <Clients clients={clients} bookings={bookings} onNote={onNote} onOpen={(id, d) => { setTab('schedule'); setDate(d); setOpenId(id); }} />}
+
+      {open && <BookingDrawer b={open} client={clients[open.phone]} onClose={() => setOpenId(null)} onUpdate={onUpdate} onDelete={id => { onDelete(id); setOpenId(null); }} />}
+      {adding && <AdminNewBooking bookings={bookings} date={date} onCreate={onCreate} onClose={() => setAdding(false)} />}
+    </div></div>
+  );
+}
+
+/* ================= ПРИЛОЖЕНИЕ ================= */
+function App() {
+  const [state, setState] = useState(loadState);
+  const [mode, setMode] = useState(() => (location.hash === '#crm' ? 'crm' : 'site'));
+  const [lang, setLang] = useState(() => store.get('hinoki-lang') || 'ru');
+  const [toast, setToast] = useState(null);
+  const [focus, setFocus] = useState(null);
+  const t = T[lang];
+
+  useEffect(() => { store.set(STORE_KEY, state); }, [state]);
+  useEffect(() => { store.set('hinoki-lang', lang); document.documentElement.lang = lang === 'kz' ? 'kk' : 'ru'; }, [lang]);
+  useEffect(() => { if (mode === 'crm') { history.replaceState(null, '', '#crm'); window.scrollTo(0, 0); } else if (location.hash === '#crm') history.replaceState(null, '', location.pathname); }, [mode]);
+  useEffect(() => { if (!toast) return; const i = setTimeout(() => setToast(null), 6000); return () => clearTimeout(i); }, [toast]);
+  // синхронизация между вкладками (сайт в одной, CRM в другой)
+  useEffect(() => { const h = e => { if (e.key === STORE_KEY && e.newValue) { try { setState(JSON.parse(e.newValue)); } catch (_) {} } }; addEventListener('storage', h); return () => removeEventListener('storage', h); }, []);
+
+  const upsertClient = (clients, phone, name, patch = {}) => ({ ...clients, [phone]: { phone, name, notes: '', history: [], ...(clients[phone] || {}), ...patch } });
+  const create = b => {
+    setState(s => ({ ...s, bookings: [...s.bookings, b], clients: upsertClient(s.clients, b.phone, b.name) }));
+    setToast({ text: `Новая запись в CRM: ${b.name} · ${svcName(b.svc)} · ${dateLabel(b.date)} ${fmt(b.start)}`, b });
+  };
+  const update = (id, patch) => setState(s => ({ ...s, bookings: s.bookings.map(b => b.id === id ? { ...b, ...patch } : b) }));
+  const del = id => setState(s => ({ ...s, bookings: s.bookings.filter(b => b.id !== id) }));
+  const note = (phone, name, notes) => setState(s => ({ ...s, clients: upsertClient(s.clients, phone, name, { notes }) }));
+  const reset = () => { const d = todayKey(); setState({ bookings: seedBookings(d), clients: seedClients(d), seedDate: d }); };
+  const goCrm = b => { setMode('crm'); if (b) setFocus({ id: b.id, date: b.date, n: Date.now() }); };
+  const fresh = state.bookings.filter(b => b.fresh).length;
+  const lastNew = [...state.bookings].filter(b => b.fresh).sort((a, b) => b.createdAt - a.createdAt)[0];
+
+  return <>
+    <header className="top">
+      <div className="wrap">
+        <a className="logo" href="#" onClick={e => { e.preventDefault(); setMode('site'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+          <Leaf /><div><b>Hinoki</b><small>SPA · Astana</small></div>
+        </a>
+        {mode === 'site' && <nav className="nav"><a href="#services">{t.nav_services}</a><a href="#book">{t.nav_book}</a><a href="#gift">{t.nav_gift}</a><a href="#contacts">{t.nav_contacts}</a></nav>}
+        <div className="sp" />
+        <div className="seg"><button className={lang === 'ru' ? 'on' : ''} onClick={() => setLang('ru')}>RU</button><button className={lang === 'kz' ? 'on' : ''} onClick={() => setLang('kz')}>KZ</button></div>
+        <div className="seg dark">
+          <button className={mode === 'site' ? 'on' : ''} onClick={() => setMode('site')}>{lang === 'kz' ? 'Клиент' : 'Клиент'}</button>
+          <button className={mode === 'crm' ? 'on' : ''} onClick={() => goCrm(lastNew)}>CRM{fresh > 0 && mode !== 'crm' && <span className="dot-badge">{fresh}</span>}</button>
+        </div>
+      </div>
+    </header>
+    {mode === 'site'
+      ? <ClientSite lang={lang} t={t} bookings={state.bookings} onCreate={create} onGoCrm={() => goCrm(lastNew)} />
+      : <CRM bookings={state.bookings} clients={state.clients} onUpdate={update} onDelete={del} onCreate={b => { setState(s => ({ ...s, bookings: [...s.bookings, b], clients: upsertClient(s.clients, b.phone, b.name) })); }} onNote={note} onReset={reset} focus={focus} />}
+    {toast && mode === 'site' && <div className="toast"><span>🆕 {toast.text}</span><button onClick={() => { goCrm(toast.b); setToast(null); }}>Открыть CRM</button></div>}
+  </>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<noscript>Для работы сайта включите JavaScript.</noscript>
+</body>
+</html>
