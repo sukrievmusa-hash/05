@@ -60,7 +60,7 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:-.01em;margin:0
 .btn:disabled{opacity:.45;cursor:not-allowed}
 
 /* hero */
-.hero{padding:56px 0 40px}
+.hero{padding:40px 0 40px}
 .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
 .eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--olive);font-weight:600}
 .hero h1{font-size:clamp(40px,6vw,74px);line-height:1.02;margin:14px 0 18px}
@@ -77,6 +77,22 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:-.01em;margin:0
 .art svg{position:absolute;inset:0;width:100%;height:100%}
 .art .tag{position:absolute;left:18px;bottom:18px;right:18px;background:rgba(255,253,249,.92);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center;backdrop-filter:blur(8px)}
 .art .tag .ic{width:40px;height:40px;border-radius:12px;background:var(--olive-l);display:grid;place-items:center;font-size:20px}
+
+/* promo */
+.promo{padding:18px 0 0}
+.promo-card{position:relative;overflow:hidden;border-radius:24px;background:linear-gradient(120deg,#2C2520 0%,#3E322A 55%,#5A4535 100%);color:#F7F4EF;padding:22px 26px;display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;box-shadow:0 14px 40px rgba(44,37,32,.22)}
+.promo-card::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;border:1px solid rgba(197,168,128,.35)}
+.promo-badge{background:var(--gold);color:var(--wood);border-radius:18px;padding:12px 14px;text-align:center;line-height:1}
+.promo-badge b{display:block;font-family:var(--serif);font-size:36px}
+.promo-badge small{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.promo-card h3{font-size:clamp(24px,3vw,32px);color:#fff}
+.promo-card p{margin:4px 0 0;color:#D9CFC2;font-size:14px}
+.promo-price{display:flex;align-items:baseline;gap:10px;margin-top:8px;flex-wrap:wrap}
+.promo-price b{font-family:var(--serif);font-size:30px;color:var(--gold)}
+.promo-price s{color:#A99C8E}
+.promo-card .btn{position:relative;z-index:1}
+.sv.is-promo{border:1.5px solid var(--gold);box-shadow:0 0 0 4px var(--gold-l)}
+@media (max-width:620px){.promo-card{grid-template-columns:auto 1fr;padding:18px;gap:14px}.promo-card .btn{grid-column:1/-1;width:100%}.promo-badge b{font-size:28px}}
 
 /* sections */
 section.s{padding:64px 0}
@@ -682,7 +698,7 @@ function ServiceCard({ s, lang, t, onBook, filter }) {
   const [open, setOpen] = useState(false);
   const isProg = s.cat === 'program';
   return (
-    <article className="sv">
+    <article className={'sv' + (s.promo ? ' is-promo' : '')}>
       <div className="meta">
         {isProg ? <span className="pill olive">⏱ {s.dur} {t.min}</span> : <span className="pill olive">⏱ 60 / 90 {t.min}</span>}
         {isProg && <span className="pill">{t.f_prog}</span>}
@@ -962,10 +978,24 @@ function GiftBuilder({ lang, t }) {
 function ClientSite({ lang, t }) {
   const [filter, setFilter] = useState('all');
   const [preset, setPreset] = useState(null);
-  const list = SERVICES.filter(s => filter === 'all' || (filter === 'two' && s.cat === 'program') || (filter === 'prog' && s.cat === 'program') || (filter === 'mass' && s.cat === 'massage'));
+  const list = [...SERVICES].sort((a, b) => (b.promo ? 1 : 0) - (a.promo ? 1 : 0)).filter(s => filter === 'all' || (filter === 'two' && s.cat === 'program') || (filter === 'prog' && s.cat === 'program') || (filter === 'mass' && s.cat === 'massage'));
   const book = (svcId, guests) => { setPreset({ svcId, guests, n: Date.now() }); document.getElementById('book').scrollIntoView({ behavior: 'smooth' }); };
   const mapQ = encodeURIComponent('Астана, проспект Бауыржана Момышулы, 2А');
+  const promo = SVC.moroccan;
   return <>
+    <section className="promo">
+      <div className="wrap">
+        <div className="promo-card">
+          <div className="promo-badge"><b>−30%</b><small>{t.promo}</small></div>
+          <div>
+            <h3>{promo.name[lang]} {lang === 'kz' ? 'екі адамға' : 'для двоих'}</h3>
+            <p>{lang === 'kz' ? 'Марокколық күтім, хаммам, массаж және шай рәсімі · 150 мин' : 'Марокканский уход, хаммам, массаж и чайная церемония · 150 мин'}</p>
+            <div className="promo-price"><b>{money(promo.p2)}</b><s>{money(promo.old2)}</s><span style={{ fontSize: 13, color: '#D9CFC2' }}>{lang === 'kz' ? 'үнемдеу' : 'экономия'} {money(promo.old2 - promo.p2)}</span></div>
+          </div>
+          <button className="btn gold" onClick={() => book('moroccan', 2)}>{lang === 'kz' ? 'Акция бойынша жазылу' : 'Записаться по акции'}</button>
+        </div>
+      </div>
+    </section>
     <section className="hero">
       <div className="wrap">
         <div>
